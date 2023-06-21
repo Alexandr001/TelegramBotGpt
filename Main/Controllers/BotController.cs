@@ -1,3 +1,7 @@
+using Main.Test.Callback;
+using Main.Test.Factories;
+using Main.Test.MessageChat;
+using Main.Test.MessageRoute;
 using Main.View.Chat;
 using Main.View.Chat.ChatMessage;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +9,7 @@ using Models;
 using Repository;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using File = Telegram.Bot.Types.File;
 
 namespace Main.Controllers;
 
@@ -15,11 +20,13 @@ public class BotController : ControllerBase
 	private readonly TelegramBotClient _bot = BotModel.GetTelegramBot();
 	private readonly ILogger<BotController> _logger;
 	private readonly RedisRepository _repository;
+	private readonly IAwsRepository _awsRepository;
 
-	public BotController(ILogger<BotController> logger, RedisRepository repository)
+	public BotController(ILogger<BotController> logger, RedisRepository repository, IAwsRepository awsRepository)
 	{
 		_logger = logger;
 		_repository = repository;
+		_awsRepository = awsRepository;
 	}
 
 	[HttpGet]
@@ -27,7 +34,7 @@ public class BotController : ControllerBase
 	{
 		return Ok("<h1>Hello! I'm BOT!</h1>");
 	}
-	
+
 	[HttpPost]
 	public async Task<IActionResult> Post(Update update)
 	{
@@ -49,49 +56,59 @@ public class BotController : ControllerBase
 
 	private async Task CallbackHandler(CallbackQuery callback)
 	{
-		ChatCallbackView callbackView = new(_bot, callback);
-		if (callback.Message == null) {
-			throw new NullReferenceException();
+		ChatModelForUser model = await GetChatModelForUser(callback.Message!.Chat.Id);
+		IFactory<string, ICallback> factory = new CallbackFactory(_bot, callback, _awsRepository);
+		ICallback? factoryMethod = factory.FactoryMethod(model!.Route.ChatParam!);
+		if (factoryMethod == null) {
+			throw new ArgumentNullException(nameof(factoryMethod), "Callback handler");
 		}
-		ChatModelForUser modelForUserById = await _repository.GetModelById<ChatModelForUser>(callback.Message!.Chat.Id) 
-		                                    ?? throw new NullReferenceException();
-		
-		
-		await callbackView.Create(callback.Data!, modelForUserById);
-		await _repository.SetModel(modelForUserById);
-
+		if (model.ChatType == MainRouteConstants.CHAT) {
+			await factoryMethod.ChatCallbackHandler(model);
+		}
+		if (model.ChatType == MainRouteConstants.DOC) {
+			await factoryMethod.DocCallbackHandler(model);
+		}
+		await _repository.SetModel(model);
 	}
-	
+
 	private async Task MessageHandler(Message message)
 	{
-		IChatMessageView messageView;
-		ChatModelForUser? modelById = await _repository.GetModelById<ChatModelForUser>(message.Chat.Id);
-		if (modelById != null && modelById.Route.EndsWith("/new")) {
-			messageView = new ChatMessageForCallback(_bot, message);
-			await messageView.Handler(message.Text!, modelById);
-			await _repository.SetModel(modelById);
+		if (message.Text[0] == '/') {
+			await RouteHandler(message);
+		} else {
+			await ChatHandler(message);
 		}
-
-		if (message.Text?[0] == '/') {
-			messageView = new ChatMessageForRoute(_bot, message);
-			if (modelById == null) {
-				modelById = await InitChatModelForUser(message);
-			}
-			await messageView.Handler(message.Text, modelById!);
-		}
-		
-		if (message.Text?[0] == '$') {
-			messageView = new ChatMessageForQuestions(_bot, message);
-			await messageView.Handler(message.Text[1..], modelById!);
-		}
-		await _repository.SetModel(modelById!);
 	}
 
-	private async Task<ChatModelForUser> InitChatModelForUser(Message message)
+	private async Task RouteHandler(Message message)
 	{
-		await _repository.SetModel(new ChatModelForUser() {
-				Id = message.Chat.Id
-		});
-		return (await _repository.GetModelById<ChatModelForUser>(message.Chat.Id))!;
+		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
+		IFactory<string, IRoute> factory = new RouteFactory(_bot, message, _awsRepository);
+		IRoute? factoryMethod = factory.FactoryMethod(message.Text![1..]);
+		if (factoryMethod == null) {
+			throw new ArgumentNullException(nameof(factoryMethod), "RoutrHandler");
+		}
+		await factoryMethod.RouteHandler(model);
+		await _repository.SetModel(model);
+	}
+
+	private async Task ChatHandler(Message message)
+	{
+		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
+		IFactory<char, IMessage> factory = new MessageChatFactory(_bot, message, _awsRepository);
+		IMessage? m = factory.FactoryMethod(message.Text);
+		await _repository.SetModel(model);
+	}
+
+	private async Task<ChatModelForUser> GetChatModelForUser(long id)
+	{
+		ChatModelForUser? chatModelForUser = await _repository.GetModelById<ChatModelForUser>(id);
+		if (chatModelForUser == null) {
+			await _repository.SetModel(new ChatModelForUser() {
+					Id = id
+			});
+			chatModelForUser = await _repository.GetModelById<ChatModelForUser>(id);
+		}
+		return chatModelForUser!;
 	}
 }

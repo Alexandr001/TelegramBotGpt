@@ -4,5 +4,5 @@ public class DocumentChat
 {
 	public string ChatName { get; set; }
 	public string Data { get; set; }
-	public byte[] File { get; set; }
+	public string FileName { get; set; }
 }

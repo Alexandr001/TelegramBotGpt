@@ -3,6 +3,7 @@ using Models.KindOfChats;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Route = Models.Route;
 
 namespace Main.View.Chat.ChatMessage;
 
@@ -16,7 +17,7 @@ public class ChatMessageForRoute : IChatMessageView
 		_bot = bot;
 		_message = message;
 	}
-	public async Task Handler(string path, ChatModelForUser chatModelForUser)
+	public async Task HandlerChat(string path, ChatModelForUser chatModelForUser)
 	{
 		switch (path) {
 			case MainRouteConstants.DOC:
@@ -31,9 +32,17 @@ public class ChatMessageForRoute : IChatMessageView
 		}
 	}
 
+	public Task HandlerDock(string message, ChatModelForUser chatModelForUser)
+	{
+		throw new NotImplementedException();
+	}
+
 	private async Task DocHandler(ChatModelForUser chatModelForUser)
 	{
-		chatModelForUser.Route = MainRouteConstants.DOC;
+		chatModelForUser.Route = new Route() {
+				ChatType = MainRouteConstants.DOC,
+		};
+
 		List<InlineKeyboardButton[]> list = new() {
 				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", nameof(ChatCallbackView.CreateChat))}
 		};
@@ -50,7 +59,9 @@ public class ChatMessageForRoute : IChatMessageView
 	
 	private async Task ChatHandler(ChatModelForUser chatModelForUser)
 	{
-		chatModelForUser.Route = MainRouteConstants.CHAT;
+		chatModelForUser.Route = new Route() {
+				ChatType = MainRouteConstants.CHAT,
+		};
 		List<InlineKeyboardButton[]> list = new() {
 				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", nameof(ChatCallbackView.CreateChat))}
 		};
@@ -68,7 +79,9 @@ public class ChatMessageForRoute : IChatMessageView
 
 	private async Task InfoHandler(ChatModelForUser chatModelForUser)
 	{
-		chatModelForUser.Route = MainRouteConstants.INFO;
+		chatModelForUser.Route = new Route() {
+				ChatType = MainRouteConstants.INFO,
+		};
 		await _bot.SendTextMessageAsync(_message.Chat.Id, "Тут будет текст описания бота!");
 	}
 

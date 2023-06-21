@@ -3,6 +3,7 @@ using Models;
 using Models.KindOfChats;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Route = Models.Route;
 
 namespace Main.View.Chat;
 
@@ -30,7 +31,10 @@ public class ChatCallbackView
 	public async Task CreateChat(ChatModelForUser chatModelForUser)
 	{
 		// ToDo: Захоркоденый док
-		chatModelForUser.Route = "/doc/new";
+		chatModelForUser.Route = new Route() {
+				ChatType = MainRouteConstants.DOC,
+				ChatRoute = "new"
+		};
 		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, 
 		                                _callbackQuery.Message!.MessageId, 
 		                                "Введите название чата:");
@@ -39,7 +43,12 @@ public class ChatCallbackView
 	public async Task ContinueChat(ChatModelForUser chatModelForUser)
 	{
 		// ToDo: Захоркоденый док
-		chatModelForUser.Route = $"/doc/name={_callbackQuery.Data}";
+		chatModelForUser.Route = new Route {
+				ChatType = MainRouteConstants.DOC,
+				ChatRoute = "name",
+				ChatParam = _callbackQuery.Data
+		};
+
 		// Получить историю чатов
 		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, 
 		                                _callbackQuery.Message!.MessageId, 

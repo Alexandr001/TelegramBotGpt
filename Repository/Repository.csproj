@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="AWSSDK.S3" Version="3.7.106" />
       <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.7" />
     </ItemGroup>
 

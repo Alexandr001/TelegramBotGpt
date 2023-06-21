@@ -7,6 +7,12 @@ builder.Services.AddStackExchangeRedisCache(options => {
 	options.InstanceName = "local";
 });
 builder.Services.AddTransient<RedisRepository>();
+builder.Services.AddTransient<IAwsRepository, AwsRepository>(_ => new AwsRepository(
+                                                                                    builder.Configuration.GetSection("serviceUrl").Value!,
+                                                                                    builder.Configuration.GetSection("accessKey").Value!,
+                                                                                    builder.Configuration.GetSection("secretKey").Value!,
+                                                                                    builder.Configuration.GetSection("bucketName").Value!
+                                                                                   ));
 // Add services to the container.
 
 builder.Services.AddControllers().AddNewtonsoftJson();
