@@ -2,14 +2,12 @@ using Main.Test.Callback;
 using Main.Test.Factories;
 using Main.Test.MessageChat;
 using Main.Test.MessageRoute;
-using Main.View.Chat;
-using Main.View.Chat.ChatMessage;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Repository;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using File = Telegram.Bot.Types.File;
+using Route = Models.Route;
 
 namespace Main.Controllers;
 
@@ -57,8 +55,10 @@ public class BotController : ControllerBase
 	private async Task CallbackHandler(CallbackQuery callback)
 	{
 		ChatModelForUser model = await GetChatModelForUser(callback.Message!.Chat.Id);
+		Route route = Route.Parse(str: callback.Data);
+		model.Route = route;
 		IFactory<string, ICallback> factory = new CallbackFactory(_bot, callback, _awsRepository);
-		ICallback? factoryMethod = factory.FactoryMethod(model!.Route.ChatParam!);
+		ICallback? factoryMethod = factory.FactoryMethod(route.ChatRoute!);
 		if (factoryMethod == null) {
 			throw new ArgumentNullException(nameof(factoryMethod), "Callback handler");
 		}
@@ -96,7 +96,16 @@ public class BotController : ControllerBase
 	{
 		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
 		IFactory<char, IMessage> factory = new MessageChatFactory(_bot, message, _awsRepository);
-		IMessage? m = factory.FactoryMethod(message.Text);
+		IMessage? messageFactory = factory.FactoryMethod(message.Text!);
+		if (messageFactory == null) {
+			throw new ArgumentNullException(nameof(messageFactory), "ChatHandler");
+		}
+		if (model.ChatType == MainRouteConstants.CHAT) {
+			await messageFactory.ChatMessageHandler(model);
+		}
+		if (model.ChatType == MainRouteConstants.DOC) {
+			await messageFactory.DocMessageHandler(model);
+		}
 		await _repository.SetModel(model);
 	}
 

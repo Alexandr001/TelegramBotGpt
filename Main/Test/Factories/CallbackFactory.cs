@@ -12,9 +12,9 @@ public class CallbackFactory : IFactory<string, ICallback>
 	public CallbackFactory(TelegramBotClient bot, CallbackQuery callbackQuery, IAwsRepository awsRepository)
 	{
 		RouteAndObject = new Dictionary<string, ICallback>() {
-				["new"] = new CreationCallback(bot, callbackQuery, awsRepository),
-				["delete"] = new DeletionCallback(bot, callbackQuery, awsRepository),
-				["name"] = new ContinuationCallback(bot, callbackQuery, awsRepository)
+				[MainRouteConstants.NEW] = new CreationCallback(bot, callbackQuery, awsRepository),
+				[MainRouteConstants.DELETE] = new DeletionCallback(bot, callbackQuery, awsRepository),
+				[MainRouteConstants.NAME] = new ContinuationCallback(bot, callbackQuery, awsRepository)
 		};
 	}
 

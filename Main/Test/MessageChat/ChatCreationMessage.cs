@@ -26,7 +26,7 @@ public class ChatCreationMessage : IMessage
 		if (model.ChatType != null) {
 			model.Route = new Route() {
 					ChatType = MainRouteConstants.CHAT,
-					ChatRoute = "name",
+					ChatRoute = MainRouteConstants.NAME,
 					ChatParam = _message.Text
 			};
 			model.ChatList!.Add(new TextChat() {
@@ -40,11 +40,12 @@ public class ChatCreationMessage : IMessage
 		if (model.ChatType != null) {
 			model.Route = new Route() {
 					ChatType = MainRouteConstants.DOC,
-					ChatRoute = "name",
+					ChatRoute = MainRouteConstants.NAME,
 					ChatParam = _message.Caption
 			};
 			model.DocChatList!.Add(new DocumentChat() {
-					ChatName = _message.Caption!
+					ChatName = _message.Caption!,
+					FileName = _message.Document!.FileName!
 			});
 			await AddFileToAws();
 		}

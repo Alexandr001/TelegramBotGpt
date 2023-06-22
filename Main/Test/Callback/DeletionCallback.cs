@@ -1,5 +1,4 @@
-﻿using Main.View.Chat.ChatMessage;
-using Models;
+﻿using Models;
 using Models.KindOfChats;
 using Repository;
 using Telegram.Bot;
@@ -24,7 +23,7 @@ public class DeletionCallback : ICallback
 	{
 		
 		TextChat textChat =
-				model.ChatList!.First(o => o.ChatName == ChatMessageForRoute.GetNameByRoute(_callbackQuery.Data!));
+				model.ChatList!.First(o => o.ChatName == model.Route.ChatParam);
 		model.ChatList!.Remove(textChat);
 		await _bot.AnswerCallbackQueryAsync(_callbackQuery.Id, "Чат удалён!");
 			
@@ -33,7 +32,7 @@ public class DeletionCallback : ICallback
 	public async Task DocCallbackHandler(ChatModelForUser model)
 	{
 		DocumentChat documentChat =
-				model.DocChatList!.First(o => o.ChatName == ChatMessageForRoute.GetNameByRoute(_callbackQuery.Data!));
+				model.DocChatList!.First(o => o.ChatName == model.Route.ChatParam);
 		model.DocChatList!.Remove(documentChat);
 		await _awsRepository.DeleteFile(documentChat.FileName, "");
 		await _bot.AnswerCallbackQueryAsync(_callbackQuery.Id, "Чат doc удалён!");

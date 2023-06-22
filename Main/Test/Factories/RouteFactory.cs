@@ -14,7 +14,8 @@ public class RouteFactory : IFactory<string, IRoute>
 		RouteAndObject = new Dictionary<string, IRoute>() {
 				[MainRouteConstants.CHAT] = new ChatRoute(bot, message, awsRepository),
 				[MainRouteConstants.DOC] = new DocRoute(bot, message, awsRepository),
-				[MainRouteConstants.INFO] = new InfoRoute(bot, message, awsRepository)
+				[MainRouteConstants.INFO] = new InfoRoute(bot, message, awsRepository),
+				[MainRouteConstants.START] = new InfoRoute(bot, message, awsRepository)
 		};
 	}
 

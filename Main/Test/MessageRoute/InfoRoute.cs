@@ -22,7 +22,7 @@ public class InfoRoute : IRoute
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.INFO
-		};;
+		};
 		await _bot.SendTextMessageAsync(_message.Chat.Id, "Тут будет текст описания бота!");
 	}
 }

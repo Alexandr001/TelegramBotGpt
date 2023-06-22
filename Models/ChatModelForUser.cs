@@ -20,21 +20,3 @@ public class ChatModelForUser : IModel
 		set { _chatList = value ?? new List<TextChat>(); }
 	}
 }
-
-public class Route
-{
-	public string ChatType { get; set; } = string.Empty;
-	public string? ChatRoute { get; set; }
-	public string? ChatParam { get; set; }
-	
-	public override string ToString()
-	{
-		if (ChatParam == null) {
-			if (ChatRoute == null) {
-				return '/' + ChatType;
-			}
-			return '/' + ChatType + '/' + ChatRoute;
-		}
-		return '/' + ChatType + '/' + ChatRoute + '=' + ChatParam;
-	}
-}

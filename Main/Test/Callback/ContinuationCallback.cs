@@ -23,7 +23,7 @@ public class ContinuationCallback : ICallback
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.CHAT,
-				ChatRoute = "name",
+				ChatRoute = MainRouteConstants.NAME,
 				ChatParam = _callbackQuery.Data
 		};
 		// Получить историю чатов
@@ -35,7 +35,7 @@ public class ContinuationCallback : ICallback
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.DOC,
-				ChatRoute = "name",
+				ChatRoute = MainRouteConstants.NAME,
 				ChatParam = _callbackQuery.Data
 		};
 		// Получить историю чатов

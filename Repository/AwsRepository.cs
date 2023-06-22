@@ -1,9 +1,6 @@
-﻿using Amazon;
-using Amazon.Runtime;
+﻿using Amazon.Runtime;
 using Amazon.S3;
-using Amazon.S3.Model;
 using Amazon.S3.Transfer;
-using Amazon.Util;
 
 namespace Repository;
 
@@ -22,12 +19,12 @@ public class AwsRepository : IAwsRepository
 	}
 	public async Task CreateFile(Stream stream, string name, string directoryName)
 	{
-		TransferUtility utility = new(_s3Client);
+		using TransferUtility utility = new(_s3Client);
 		await utility.UploadAsync(stream, _bucketName, name);
 	}
 
-	public Task DeleteFile(string name, string directoryName)
+	public async Task DeleteFile(string name, string directoryName)
 	{
-		throw new NotImplementedException();
+		await _s3Client.DeleteObjectAsync(_bucketName, name);
 	}
 }

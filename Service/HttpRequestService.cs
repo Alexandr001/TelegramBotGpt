@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace Service;
 
-public class HttpRequestService
+public class HttpRequestService : IHttpService
 {
 	private const string IP = "127.0.0.1";
 	private const int PORT = 8000;
@@ -21,5 +21,16 @@ public class HttpRequestService
 		return new ResponceModel() {
 				Message = await resp.Content.ReadAsStringAsync()
 		};
+	}
+
+	public async Task<T?> GetHttp<T>(string url)
+			where T : class
+	{
+		HttpClient client = new();
+		using HttpResponseMessage resp = await client.GetAsync(url);
+		if (resp.IsSuccessStatusCode) {
+			return await resp.Content.ReadFromJsonAsync<T>();
+		}
+		return null;
 	}
 }

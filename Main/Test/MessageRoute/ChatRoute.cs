@@ -1,5 +1,4 @@
-﻿using Main.View.Chat;
-using Models;
+﻿using Models;
 using Models.KindOfChats;
 using Repository;
 using Telegram.Bot;
@@ -29,13 +28,13 @@ public class ChatRoute : IRoute
 		};
 		model.ChatType = MainRouteConstants.CHAT;
 		List<InlineKeyboardButton[]> list = new() {
-				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", nameof(ChatCallbackView.CreateChat))}
+				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", MainRouteConstants.NEW)}
 		};
 
 		foreach (TextChat chat in model.ChatList!) {
 			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.ChatName, chat.ChatName),
-					InlineKeyboardButton.WithCallbackData("Удалить", $"delete={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"),
+					InlineKeyboardButton.WithCallbackData("Удалить", $"{MainRouteConstants.DELETE}={chat.ChatName}")
 			});
 		}
 
