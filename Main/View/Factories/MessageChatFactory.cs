@@ -1,9 +1,10 @@
-﻿using Main.Test.MessageChat;
+﻿using Main.Test.Factories;
+using Main.View.MessageChat;
 using Repository;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace Main.Test.Factories;
+namespace Main.View.Factories;
 
 public class MessageChatFactory : IFactory<char, IMessage>
 {
@@ -16,7 +17,7 @@ public class MessageChatFactory : IFactory<char, IMessage>
 				[default /*Значение по умолчанию*/] = new ChatCreationMessage(bot, message, awsRepository),
 		};
 	}
-	public IMessage? FactoryMethod(string message)
+	public IMessage FactoryMethod(string message)
 	{
 		foreach ((char key, IMessage? value) in RouteAndObject) {
 			if (message[0] == key) {

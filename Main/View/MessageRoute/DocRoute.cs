@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Route = Models.Route;
 
-namespace Main.Test.MessageRoute;
+namespace Main.View.MessageRoute;
 
 public class DocRoute : IRoute
 {
@@ -29,11 +29,11 @@ public class DocRoute : IRoute
 		List<InlineKeyboardButton[]> list = new() {
 				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", MainRouteConstants.NEW)}
 		};
-		
+
 		foreach (DocumentChat chat in model.DocChatList!) { 
 			list.Add(new[] {
 					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"), 
-					InlineKeyboardButton.WithCallbackData("Удалить", $"{MainRouteConstants.DELETE}={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData("<i>Удалить</i>", $"{MainRouteConstants.DELETE}={chat.ChatName}")
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);

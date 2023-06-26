@@ -1,5 +1,6 @@
 ﻿using Models;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace Service;
 
@@ -8,10 +9,11 @@ public class HttpRequestService : IHttpService
 	private const string IP = "127.0.0.1";
 	private const int PORT = 8000;
 
-	public async Task<ResponceModel?> GetResponce(string query)
+	public async Task<ResponceModel?> GetResponce(string query, string docName)
 	{
 		string url = new HttpEndPoint(IP, PORT, null, new Dictionary<string, string>() {
-				["message"] = query
+				["message"] = query,
+				["doc_name"] = docName
 		}).ToString();
 		HttpClient client = new();
 		using HttpResponseMessage resp = await client.GetAsync(url);

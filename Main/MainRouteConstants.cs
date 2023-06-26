@@ -1,6 +1,4 @@
-﻿using Main.Test.MessageRoute;
-
-namespace Main;
+﻿namespace Main;
 
 public class MainRouteConstants
 {

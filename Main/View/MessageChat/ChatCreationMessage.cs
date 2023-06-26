@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 using File = Telegram.Bot.Types.File;
 using Route = Models.Route;
 
-namespace Main.Test.MessageChat;
+namespace Main.View.MessageChat;
 
 public class ChatCreationMessage : IMessage
 {

@@ -1,7 +1,8 @@
 using Main.Test.Callback;
 using Main.Test.Factories;
-using Main.Test.MessageChat;
-using Main.Test.MessageRoute;
+using Main.View.Factories;
+using Main.View.MessageChat;
+using Main.View.MessageRoute;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Repository;
@@ -45,11 +46,23 @@ public class BotController : ControllerBase
 				await MessageHandler(update.Message);
 				return Ok();
 			}
-			return NotFound();
+		} catch (CustomException ce) {
+			if (update.Message?.Chat.Id != null) {
+				await _bot.SendTextMessageAsync(update.Message.Chat.Id, ce.Message);
+			} else {
+				await _bot.SendTextMessageAsync(update.CallbackQuery!.Message!.Chat.Id, ce.Message);
+			}
 		} catch (Exception e) {
-			_logger.LogError(e.ToString());
-			return BadRequest();
+			string errorMes = e.ToString();
+			_logger.LogError(errorMes);
+			if (update.Message?.Chat.Id != null) {
+				await _bot.SendTextMessageAsync(update.Message.Chat.Id, errorMes);
+			} else {
+				await _bot.SendTextMessageAsync(update.CallbackQuery!.Message!.Chat.Id, errorMes);
+			}
+			return Ok();
 		}
+		return Ok();
 	}
 
 	private async Task CallbackHandler(CallbackQuery callback)
@@ -60,7 +73,7 @@ public class BotController : ControllerBase
 		IFactory<string, ICallback> factory = new CallbackFactory(_bot, callback, _awsRepository);
 		ICallback? factoryMethod = factory.FactoryMethod(route.ChatRoute!);
 		if (factoryMethod == null) {
-			throw new ArgumentNullException(nameof(factoryMethod), "Callback handler");
+			throw new CustomException("Фабрика не создалась!");
 		}
 		if (model.ChatType == MainRouteConstants.CHAT) {
 			await factoryMethod.ChatCallbackHandler(model);
@@ -73,7 +86,7 @@ public class BotController : ControllerBase
 
 	private async Task MessageHandler(Message message)
 	{
-		if (message.Text[0] == '/') {
+		if (message.Text != null && message.Text[0] == '/') {
 			await RouteHandler(message);
 		} else {
 			await ChatHandler(message);
@@ -86,7 +99,7 @@ public class BotController : ControllerBase
 		IFactory<string, IRoute> factory = new RouteFactory(_bot, message, _awsRepository);
 		IRoute? factoryMethod = factory.FactoryMethod(message.Text![1..]);
 		if (factoryMethod == null) {
-			throw new ArgumentNullException(nameof(factoryMethod), "RoutrHandler");
+			throw new CustomException("Фабрика не создалась! Неверно введённый роут");
 		}
 		await factoryMethod.RouteHandler(model);
 		await _repository.SetModel(model);
@@ -94,11 +107,15 @@ public class BotController : ControllerBase
 
 	private async Task ChatHandler(Message message)
 	{
+		string? text = message.Text ?? message.Caption;
+		if (text == null) {
+			throw new CustomException("Неверно введенное сообщение!");
+		}
 		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
 		IFactory<char, IMessage> factory = new MessageChatFactory(_bot, message, _awsRepository);
-		IMessage? messageFactory = factory.FactoryMethod(message.Text!);
+		IMessage? messageFactory = factory.FactoryMethod(text);
 		if (messageFactory == null) {
-			throw new ArgumentNullException(nameof(messageFactory), "ChatHandler");
+			throw new CustomException("Фабрика не создалась! Что то с сообщениями");
 		}
 		if (model.ChatType == MainRouteConstants.CHAT) {
 			await messageFactory.ChatMessageHandler(model);

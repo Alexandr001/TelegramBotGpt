@@ -1,6 +1,6 @@
 ﻿using Models;
 
-namespace Main.Test.MessageRoute;
+namespace Main.View.MessageRoute;
 
 public interface IRoute
 {

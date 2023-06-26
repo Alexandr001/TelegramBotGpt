@@ -1,4 +1,4 @@
-﻿namespace Main.Test.Factories;
+﻿namespace Main.View.Factories;
 
 public interface IFactory<TObj, TClass>
 		where TClass : class

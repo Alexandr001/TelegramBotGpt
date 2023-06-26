@@ -4,7 +4,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Route = Models.Route;
 
-namespace Main.Test.MessageRoute;
+namespace Main.View.MessageRoute;
 
 public class InfoRoute : IRoute
 {

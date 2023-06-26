@@ -1,6 +1,6 @@
 ﻿using Models;
 
-namespace Main.Test.MessageChat;
+namespace Main.View.MessageChat;
 
 public interface IMessage
 {

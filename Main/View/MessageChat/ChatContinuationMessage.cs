@@ -1,9 +1,11 @@
 ﻿using Models;
+using Models.KindOfChats;
 using Repository;
+using Service;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace Main.Test.MessageChat;
+namespace Main.View.MessageChat;
 
 public class ChatContinuationMessage : IMessage
 {
@@ -17,13 +19,13 @@ public class ChatContinuationMessage : IMessage
 		_message = message;
 		_awsRepository = awsRepository;
 	}
+
 	public async Task ChatMessageHandler(ChatModelForUser model)
 	{
 		if (model.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.ChatType), "Не выбран тип чата!");
 		}
 		await _bot.SendTextMessageAsync(_message.Chat.Id, "Продолжение чата по чату! Роут" + model.Route);
-
 	}
 
 	public async Task DocMessageHandler(ChatModelForUser model)
@@ -31,6 +33,10 @@ public class ChatContinuationMessage : IMessage
 		if (model.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.ChatType), "Не выбран тип чата!");
 		}
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "Продолжение чата по документу! Роут" + model.Route);
+		DocumentChat documentChat = model.DocChatList!.First(d => d.ChatName == model.Route.ChatParam);
+		HttpRequestService service = new();
+		ResponceModel? responceModel = await service.GetResponce(_message.Text![1..], documentChat.FileName);
+
+		await _bot.SendTextMessageAsync(_message.Chat.Id, responceModel!.Message);
 	}
 }
