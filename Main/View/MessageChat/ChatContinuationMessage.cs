@@ -25,7 +25,9 @@ public class ChatContinuationMessage : IMessage
 		if (model.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.ChatType), "Не выбран тип чата!");
 		}
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "Продолжение чата по чату! Роут" + model.Route);
+		GptService service = new();
+		string response = await service.AskQuestionAsync(_message.Text!);
+		await _bot.SendTextMessageAsync(_message.Chat.Id, "Продолжение чата по чату! Роут" + model.Route + "\n" + response);
 	}
 
 	public async Task DocMessageHandler(ChatModelForUser model)

@@ -3,6 +3,7 @@ using Models.KindOfChats;
 using Repository;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using Route = Models.Route;
 
@@ -20,6 +21,7 @@ public class DocRoute : IRoute
 		_message = message;
 		_awsRepository = awsRepository;
 	}
+	
 	public async Task RouteHandler(ChatModelForUser model)
 	{
 		model.Route = new Route() {
@@ -33,11 +35,10 @@ public class DocRoute : IRoute
 		foreach (DocumentChat chat in model.DocChatList!) { 
 			list.Add(new[] {
 					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"), 
-					InlineKeyboardButton.WithCallbackData("<i>Удалить</i>", $"{MainRouteConstants.DELETE}={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.ChatName}")
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "<b>Выберите или создайте чат для ответы на вопросы по документам</b>", replyMarkup: markup);
-
+		await _bot.SendTextMessageAsync(_message.Chat.Id, "*Выберите или создайте чат для ответы на вопросы по документам*", replyMarkup: markup);
 	}
 }

@@ -24,6 +24,9 @@ public class ChatCreationMessage : IMessage
 	public async Task ChatMessageHandler(ChatModelForUser model)
 	{
 		if (model.ChatType != null) {
+			if (model.Route.ChatRoute != MainRouteConstants.NEW) {
+				throw new CustomException("Напиши $ еред сообщением!");
+			}
 			model.Route = new Route() {
 					ChatType = MainRouteConstants.CHAT,
 					ChatRoute = MainRouteConstants.NAME,
@@ -38,6 +41,12 @@ public class ChatCreationMessage : IMessage
 	public async Task DocMessageHandler(ChatModelForUser model)
 	{
 		if (model.ChatType != null) {
+			if (model.Route.ChatRoute != MainRouteConstants.NEW) {
+				throw new CustomException("Напиши $ перед сообщением!");
+			}
+			if (_message.Caption?.Length > 60) {
+				
+			}
 			model.Route = new Route() {
 					ChatType = MainRouteConstants.DOC,
 					ChatRoute = MainRouteConstants.NAME,

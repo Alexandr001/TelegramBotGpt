@@ -22,7 +22,6 @@ public class ChatRoute : IRoute
 		_message = message;
 		_awsRepository = awsRepository;
 	}
-
 	public async Task RouteHandler(ChatModelForUser model)
 	{
 		model.Route = new Route() {
@@ -36,11 +35,10 @@ public class ChatRoute : IRoute
 		foreach (TextChat chat in model.ChatList!) {
 			list.Add(new[] {
 					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"),
-					InlineKeyboardButton.WithCallbackData("<i>Удалить</i>", $"{MainRouteConstants.DELETE}={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.ChatName}")
 			});
 		}
-
 		InlineKeyboardMarkup markup = new(list);
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "<b>Выберите или создайте чат для общения с ChatGPT</b>", replyMarkup: markup, parseMode: ParseMode.Html);
+		await _bot.SendTextMessageAsync(_message.Chat.Id, "*Выберите или создайте чат для общения с ChatGPT*", replyMarkup: markup);
 	}
 }
