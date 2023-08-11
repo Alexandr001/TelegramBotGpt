@@ -1,6 +1,8 @@
-﻿using Models;
+﻿using IoC;
+using Models;
 using Models.KindOfChats;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -12,22 +14,20 @@ namespace Main.View.MessageRoute;
 public class DocRoute : IRoute
 {
 	private readonly TelegramBotClient _bot;
-	private readonly Message _message;
-	private readonly IAwsRepository _awsRepository;
+	private readonly IUserRepository _userRepository;
 
-	public DocRoute(TelegramBotClient bot, Message message, IAwsRepository awsRepository)
+	public DocRoute()
 	{
-		_bot = bot;
-		_message = message;
-		_awsRepository = awsRepository;
+		_bot = IoCContainer.GetService<TelegramBotClient>();
+		_userRepository = IoCContainer.GetService<IUserRepository>();
 	}
 	
-	public async Task RouteHandler(ChatModelForUser model)
+	public async Task RouteHandler(ChatModelForUser model, Message message)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.DOC
 		};
-		model.ChatType = MainRouteConstants.DOC;
+		await _userRepository.EditUserRoute(model);
 		List<InlineKeyboardButton[]> list = new() {
 				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", MainRouteConstants.NEW)}
 		};
@@ -39,6 +39,6 @@ public class DocRoute : IRoute
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "*Выберите или создайте чат для ответы на вопросы по документам*", replyMarkup: markup);
+		await _bot.SendTextMessageAsync(message.Chat.Id, "*Выберите или создайте чат для ответы на вопросы по документам*", replyMarkup: markup);
 	}
 }

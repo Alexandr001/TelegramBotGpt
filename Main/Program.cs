@@ -1,25 +1,20 @@
-using Repository;
+using Main.Core;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddStackExchangeRedisCache(options => {
-	options.Configuration = "localhost";
-	options.InstanceName = "local";
-});
-builder.Services.AddTransient<RedisRepository>();
-builder.Services.AddTransient<IAwsRepository, AwsRepository>(_ => new AwsRepository(
-                                                                                    builder.Configuration.GetSection("serviceUrl").Value!,
-                                                                                    builder.Configuration.GetSection("accessKey").Value!,
-                                                                                    builder.Configuration.GetSection("secretKey").Value!,
-                                                                                    builder.Configuration.GetSection("bucketName").Value!
-                                                                                   ));
+Di.Register(builder);
+// IConfigurationSection sectionAws = builder.Configuration.GetSection("AWS");
+// AwsAccessModel? awsAccessModel = builder.Configuration.GetSection("AWS").Get<AwsAccessModel>();
+
+//builder.Services.AddTransient<TelegramBotClient>(_ => new TelegramBotClient(builder.Configuration.GetSection("BotKey").Value!));
+
 // Add services to the container.
 
 builder.Services.AddControllers().AddNewtonsoftJson();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseHttpsRedirection();
 
@@ -28,3 +23,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

@@ -1,5 +1,7 @@
-﻿using Models;
+﻿using IoC;
+using Models;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Route = Models.Route;
@@ -9,20 +11,19 @@ namespace Main.View.MessageRoute;
 public class InfoRoute : IRoute
 {
 	private readonly TelegramBotClient _bot;
-	private readonly Message _message;
-	private readonly IAwsRepository _awsRepository;
+	private readonly IUserRepository _userRepository;
 
-	public InfoRoute(TelegramBotClient bot, Message message, IAwsRepository awsRepository)
+	public InfoRoute()
 	{
-		_bot = bot;
-		_message = message;
-		_awsRepository = awsRepository;
+		_bot = IoCContainer.GetService<TelegramBotClient>();
+		_userRepository = IoCContainer.GetService<IUserRepository>();
 	}
-	public async Task RouteHandler(ChatModelForUser model)
+	public async Task RouteHandler(ChatModelForUser model, Message message)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.INFO
 		};
-		await _bot.SendTextMessageAsync(_message.Chat.Id, "Тут будет текст описания бота!");
+		await _userRepository.EditUserRoute(model);
+		await _bot.SendTextMessageAsync(message.Chat.Id, "Тут будет текст описания бота!");
 	}
 }

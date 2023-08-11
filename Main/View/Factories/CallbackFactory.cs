@@ -1,22 +1,17 @@
-﻿using Main.Test.Callback;
-using Main.View.Callback;
-using Main.View.Factories;
-using Repository;
-using Telegram.Bot;
-using Telegram.Bot.Types;
+﻿using Main.View.Callback;
 
-namespace Main.Test.Factories;
+namespace Main.View.Factories;
 
 public class CallbackFactory : IFactory<string, ICallback>
 {
 	public IReadOnlyDictionary<string, ICallback> RouteAndObject { get; }
 
-	public CallbackFactory(TelegramBotClient bot, CallbackQuery callbackQuery, IAwsRepository awsRepository)
+	public CallbackFactory()
 	{
 		RouteAndObject = new Dictionary<string, ICallback>() {
-				[MainRouteConstants.NEW] = new CreationCallback(bot, callbackQuery, awsRepository),
-				[MainRouteConstants.DELETE] = new DeletionCallback(bot, callbackQuery, awsRepository),
-				[MainRouteConstants.NAME] = new ContinuationCallback(bot, callbackQuery, awsRepository)
+				[MainRouteConstants.NEW] = new CreationCallback(),
+				[MainRouteConstants.DELETE] = new DeletionCallback(),
+				[MainRouteConstants.NAME] = new ContinuationCallback()
 		};
 	}
 

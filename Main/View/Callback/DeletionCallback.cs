@@ -1,40 +1,44 @@
-﻿using Models;
+﻿using IoC;
+using Models;
 using Models.KindOfChats;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace Main.Test.Callback;
+namespace Main.View.Callback;
 
 public class DeletionCallback : ICallback
 {
 	private readonly TelegramBotClient _bot;
-	private readonly CallbackQuery _callbackQuery;
 	private readonly IAwsRepository _awsRepository;
+	private readonly IChatRepository<TextChat> _chatRepository;
+	private readonly IChatRepository<DocumentChat> _docRepository;
 
-	public DeletionCallback(TelegramBotClient bot, CallbackQuery callbackQuery, IAwsRepository awsRepository)
+	public DeletionCallback()
 	{
-		_bot = bot;
-		_callbackQuery = callbackQuery;
-		_awsRepository = awsRepository;
+		_bot = IoCContainer.GetService<TelegramBotClient>();
+		_awsRepository = IoCContainer.GetService<IAwsRepository>();
+		_chatRepository = IoCContainer.GetService<IChatRepository<TextChat>>();
+		_docRepository = IoCContainer.GetService<IChatRepository<DocumentChat>>();
 	}
-
-	public async Task ChatCallbackHandler(ChatModelForUser model)
+	
+	public async Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
-		
 		TextChat textChat =
-				model.ChatList!.First(o => o.ChatName == model.Route.ChatParam);
-		model.ChatList!.Remove(textChat);
-		await _bot.AnswerCallbackQueryAsync(_callbackQuery.Id, "Чат удалён!");
-			
+				model.ChatList.First(o => o.ChatName == model.Route.ChatParam);
+		model.ChatList.Remove(textChat);
+		await _bot.AnswerCallbackQueryAsync(callbackQuery.Id, "Чат удалён!");
+		await _chatRepository.DeleteChat(textChat.ChatName);
 	}
 
-	public async Task DocCallbackHandler(ChatModelForUser model)
+	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		DocumentChat documentChat =
-				model.DocChatList!.First(o => o.ChatName == model.Route.ChatParam);
-		model.DocChatList!.Remove(documentChat);
-		await _awsRepository.DeleteFile(documentChat.FileName, "");
-		await _bot.AnswerCallbackQueryAsync(_callbackQuery.Id, "Чат doc удалён!");
+				model.DocChatList.First(o => o.ChatName == model.Route.ChatParam);
+		model.DocChatList.Remove(documentChat);
+		await _chatRepository.DeleteChat(documentChat.ChatName);
+		await _awsRepository.DeleteFile(documentChat.ChatName, callbackQuery.Message!.Chat.Id.ToString());
+		await _bot.AnswerCallbackQueryAsync(callbackQuery.Id, "Чат удалён!");
 	}
 }

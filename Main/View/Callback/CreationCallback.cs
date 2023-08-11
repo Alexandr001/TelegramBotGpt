@@ -1,42 +1,44 @@
-﻿using Models;
+﻿using IoC;
+using Models;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Route = Models.Route;
 
-namespace Main.Test.Callback;
+namespace Main.View.Callback;
 
 public class CreationCallback : ICallback
 {
 	private readonly TelegramBotClient _bot;
-	private readonly CallbackQuery _callbackQuery;
-	private readonly IAwsRepository _awsRepository;
+	private readonly IUserRepository _userRepository;
 
-	public CreationCallback(TelegramBotClient bot, CallbackQuery callbackQuery, IAwsRepository awsRepository)
+	public CreationCallback()
 	{
-		_bot = bot;
-		_callbackQuery = callbackQuery;
-		_awsRepository = awsRepository;
+		_bot = IoCContainer.GetService<TelegramBotClient>();
+		_userRepository = IoCContainer.GetService<IUserRepository>();
 	}
-	public async Task ChatCallbackHandler(ChatModelForUser model)
+	public async Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.CHAT,
-				ChatRoute = "new",
+				ChatRoute = MainRouteConstants.NEW
 		};
-		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, 
-		                                _callbackQuery.Message!.MessageId, 
+		await _userRepository.EditUserRoute(model);
+		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, 
+		                                callbackQuery.Message!.MessageId, 
 		                                "Введите название чата:");
 	}
 
-	public async Task DocCallbackHandler(ChatModelForUser model)
+	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.DOC,
-				ChatRoute = "new",
+				ChatRoute = MainRouteConstants.NEW
 		};
-		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, 
-		                                _callbackQuery.Message!.MessageId, 
+		await _userRepository.EditUserRoute(model);
+		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, 
+		                                callbackQuery.Message!.MessageId, 
 		                                "Введите название чата и прикрепите документ:");
 	}
 }

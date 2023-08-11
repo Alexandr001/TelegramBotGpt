@@ -1,11 +1,12 @@
-using Main.Test.Callback;
-using Main.Test.Factories;
+using IoC;
+using Main.View.Callback;
 using Main.View.Factories;
 using Main.View.MessageChat;
 using Main.View.MessageRoute;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Route = Models.Route;
@@ -18,14 +19,15 @@ public class BotController : ControllerBase
 {
 	private readonly TelegramBotClient _bot = BotModel.GetTelegramBot();
 	private readonly ILogger<BotController> _logger;
-	private readonly RedisRepository _repository;
-	private readonly IAwsRepository _awsRepository;
+	private readonly IRedisRepository _redisRepository;
+	private readonly IUserRepository _userRepository;
 
-	public BotController(ILogger<BotController> logger, RedisRepository repository, IAwsRepository awsRepository)
+	public BotController(ILogger<BotController> logger)
 	{
+		
 		_logger = logger;
-		_repository = repository;
-		_awsRepository = awsRepository;
+		_redisRepository = IoCContainer.GetService<IRedisRepository>();
+		_userRepository = IoCContainer.GetService<IUserRepository>();
 	}
 
 	[HttpGet]
@@ -67,21 +69,20 @@ public class BotController : ControllerBase
 
 	private async Task CallbackHandler(CallbackQuery callback)
 	{
-		ChatModelForUser model = await GetChatModelForUser(callback.Message!.Chat.Id);
+		ChatModelForUser? model = await _userRepository.GetUser(callback.Message.Chat.Id);
 		Route route = Route.Parse(str: callback.Data);
-		model.Route = route;
-		IFactory<string, ICallback> factory = new CallbackFactory(_bot, callback, _awsRepository);
+		IFactory<string, ICallback> factory = new CallbackFactory();
 		ICallback? factoryMethod = factory.FactoryMethod(route.ChatRoute!);
 		if (factoryMethod == null) {
 			throw new CustomException("Фабрика не создалась!");
 		}
-		if (model.ChatType == MainRouteConstants.CHAT) {
-			await factoryMethod.ChatCallbackHandler(model);
+		if (route.ChatType == MainRouteConstants.CHAT) {
+			await factoryMethod.ChatCallbackHandler(model, callback);
 		}
-		if (model.ChatType == MainRouteConstants.DOC) {
-			await factoryMethod.DocCallbackHandler(model);
+		if (route.ChatType == MainRouteConstants.DOC) {
+			await factoryMethod.DocCallbackHandler(model, callback);
 		}
-		await _repository.SetModel(model);
+		await _redisRepository.SetModel(model);
 	}
 
 	private async Task MessageHandler(Message message)
@@ -95,14 +96,13 @@ public class BotController : ControllerBase
 
 	private async Task RouteHandler(Message message)
 	{
-		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
-		IFactory<string, IRoute> factory = new RouteFactory(_bot, message, _awsRepository);
+		ChatModelForUser? model = await _userRepository.GetUser(message.Chat.Id);
+		IFactory<string, IRoute> factory = new RouteFactory();
 		IRoute? factoryMethod = factory.FactoryMethod(message.Text![1..]);
 		if (factoryMethod == null) {
 			throw new CustomException("Фабрика не создалась! Неверно введённый роут");
 		}
-		await factoryMethod.RouteHandler(model);
-		await _repository.SetModel(model);
+		await factoryMethod.RouteHandler(model, message);
 	}
 
 	private async Task ChatHandler(Message message)
@@ -111,30 +111,30 @@ public class BotController : ControllerBase
 		if (text == null) {
 			throw new CustomException("Неверно введенное сообщение!");
 		}
-		ChatModelForUser model = await GetChatModelForUser(message.Chat.Id);
-		IFactory<char, IMessage> factory = new MessageChatFactory(_bot, message, _awsRepository);
+		ChatModelForUser? model = await _userRepository.GetUser(message.Chat.Id);
+		IFactory<char, IMessage> factory = new MessageChatFactory();
 		IMessage? messageFactory = factory.FactoryMethod(text);
 		if (messageFactory == null) {
 			throw new CustomException("Фабрика не создалась! Что то с сообщениями");
 		}
-		if (model.ChatType == MainRouteConstants.CHAT) {
-			await messageFactory.ChatMessageHandler(model);
+		if (model.Route.ChatType == MainRouteConstants.CHAT) {
+			await messageFactory.ChatMessageHandler(model, message);
 		}
-		if (model.ChatType == MainRouteConstants.DOC) {
-			await messageFactory.DocMessageHandler(model);
+		if (model.Route.ChatType == MainRouteConstants.DOC) {
+			await messageFactory.DocMessageHandler(model, message);
 		}
-		await _repository.SetModel(model);
+		await _redisRepository.SetModel(model);
 	}
 
-	private async Task<ChatModelForUser> GetChatModelForUser(long id)
-	{
-		ChatModelForUser? chatModelForUser = await _repository.GetModelById<ChatModelForUser>(id);
-		if (chatModelForUser == null) {
-			await _repository.SetModel(new ChatModelForUser() {
-					Id = id
-			});
-			chatModelForUser = await _repository.GetModelById<ChatModelForUser>(id);
-		}
-		return chatModelForUser!;
-	}
+	// private async Task<ChatModelForUser> GetChatModelForUser(long id)
+	// {
+	// 	ChatModelForUser? chatModelForUser = await _redisRepository.GetModelById<ChatModelForUser>(id);
+	// 	if (chatModelForUser == null) {
+	// 		await _redisRepository.SetModel(new ChatModelForUser() {
+	// 				Id = id
+	// 		});
+	// 		chatModelForUser = await _redisRepository.GetModelById<ChatModelForUser>(id);
+	// 	}
+	// 	return chatModelForUser!;
+	// }
 }

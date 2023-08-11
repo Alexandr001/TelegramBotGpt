@@ -1,16 +1,17 @@
 ﻿using System.Text.Json;
+using IoC;
 using Microsoft.Extensions.Caching.Distributed;
 using Models;
 
 namespace Repository;
 
-public class RedisRepository
+public class RedisRepository : IRedisRepository
 {
 	private readonly IDistributedCache _distributedCache;
 
-	public RedisRepository(IDistributedCache distributedCache)
+	public RedisRepository()
 	{
-		_distributedCache = distributedCache;
+		_distributedCache = IoCContainer.GetConstant<IDistributedCache>(Constants.REDIS_CACHE);
 	}
 
 	public async Task<T?> GetModelById<T>(long id) where T : class, IModel

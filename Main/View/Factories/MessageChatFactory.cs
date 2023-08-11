@@ -1,6 +1,6 @@
-﻿using Main.Test.Factories;
-using Main.View.MessageChat;
+﻿using Main.View.MessageChat;
 using Repository;
+using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -10,11 +10,11 @@ public class MessageChatFactory : IFactory<char, IMessage>
 {
 	public IReadOnlyDictionary<char, IMessage> RouteAndObject { get; }
 
-	public MessageChatFactory(TelegramBotClient bot, Message message, IAwsRepository awsRepository)
+	public MessageChatFactory()
 	{
 		RouteAndObject = new Dictionary<char, IMessage>() {
-				['$'] = new ChatContinuationMessage(bot, message, awsRepository),
-				[default /*Значение по умолчанию*/] = new ChatCreationMessage(bot, message, awsRepository),
+				['$'] = new ChatContinuationMessage(),
+				[default /*Значение по умолчанию*/] = new ChatCreationMessage(),
 		};
 	}
 	public IMessage FactoryMethod(string message)

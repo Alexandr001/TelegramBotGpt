@@ -1,4 +1,4 @@
-﻿using Main.Test.Callback;
+﻿using IoC;
 using Models;
 using Repository;
 using Telegram.Bot;
@@ -10,38 +10,33 @@ namespace Main.View.Callback;
 public class ContinuationCallback : ICallback
 {
 	private readonly TelegramBotClient _bot;
-	private readonly CallbackQuery _callbackQuery;
 	private readonly IAwsRepository _awsRepository;
 
-	public ContinuationCallback(TelegramBotClient bot, CallbackQuery callbackQuery, IAwsRepository awsRepository)
+	public ContinuationCallback()
 	{
-		_bot = bot;
-		_callbackQuery = callbackQuery;
-		_awsRepository = awsRepository;
+		_bot = IoCContainer.GetService<TelegramBotClient>();
+		_awsRepository = IoCContainer.GetService<IAwsRepository>();
 	}
 
-	public async Task ChatCallbackHandler(ChatModelForUser model)
+	public async Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.CHAT,
 				ChatRoute = MainRouteConstants.NAME,
-				ChatParam = _callbackQuery.Data
+				ChatParam = callbackQuery.Data
 		};
-		// Получить историю чатов
-		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, _callbackQuery.Message!.MessageId, "Тут будет история сообщений:");
-		
+		// ToDo: Получить историю чатов
+		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, callbackQuery.Message!.MessageId, "Тут будет история сообщений:");
 	}
 
-	public async Task DocCallbackHandler(ChatModelForUser model)
+	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		model.Route = new Route() {
 				ChatType = MainRouteConstants.DOC,
 				ChatRoute = MainRouteConstants.NAME,
-				ChatParam = _callbackQuery.Data
+				ChatParam = callbackQuery.Data
 		};
-		// Получить историю чатов
-		await _bot.EditMessageTextAsync(_callbackQuery.Message?.Chat.Id!, 
-		                                _callbackQuery.Message!.MessageId, 
-		                                "Тут будет история сообщений doc:");
+		// ToDo: Получить историю чатов
+		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, callbackQuery.Message!.MessageId, "Тут будет история сообщений doc:");
 	}
 }

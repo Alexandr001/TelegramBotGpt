@@ -1,22 +1,21 @@
-﻿using Main.View.Factories;
-using Main.View.MessageRoute;
+﻿using Main.View.MessageRoute;
 using Repository;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace Main.Test.Factories;
+namespace Main.View.Factories;
 
 public class RouteFactory : IFactory<string, IRoute>
 {
 	public IReadOnlyDictionary<string, IRoute> RouteAndObject { get; }
 
-	public RouteFactory(TelegramBotClient bot, Message message, IAwsRepository awsRepository)
+	public RouteFactory()
 	{
 		RouteAndObject = new Dictionary<string, IRoute>() {
-				[MainRouteConstants.CHAT] = new ChatRoute(bot, message, awsRepository),
-				[MainRouteConstants.DOC] = new DocRoute(bot, message, awsRepository),
-				[MainRouteConstants.INFO] = new InfoRoute(bot, message, awsRepository),
-				[MainRouteConstants.START] = new InfoRoute(bot, message, awsRepository)
+				[MainRouteConstants.CHAT] = new ChatRoute(),
+				[MainRouteConstants.DOC] = new DocRoute(),
+				[MainRouteConstants.INFO] = new InfoRoute(),
+				[MainRouteConstants.START] = new StartRoute()
 		};
 	}
 

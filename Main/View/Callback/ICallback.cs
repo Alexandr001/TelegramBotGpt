@@ -1,9 +1,10 @@
 ﻿using Models;
+using Telegram.Bot.Types;
 
-namespace Main.Test.Callback;
+namespace Main.View.Callback;
 
 public interface ICallback
 {
-	Task ChatCallbackHandler(ChatModelForUser model);
-	Task DocCallbackHandler(ChatModelForUser model);
+	Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery);
+	Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery);
 }
