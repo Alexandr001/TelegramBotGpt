@@ -40,8 +40,9 @@ public class ChatCreationMessage : IMessage
 			};
 			await _userRepository.EditUserRoute(model);
 			await _chatRepository.AddChat(new TextChat() {
-					ChatName = message.Text ?? ""
+					Name = message.Text ?? ""
 			}, message.Chat.Id);
+			await _bot.SendTextMessageAsync(message.Chat.Id, "Чат создан!");
 		}
 	}
 
@@ -59,16 +60,13 @@ public class ChatCreationMessage : IMessage
 					ChatRoute = MainRouteConstants.NAME,
 					ChatParam = message.Caption
 			};
-			model.DocChatList!.Add(new DocumentChat() {
-					ChatName = message.Caption!,
-					FileName = message.Document!.FileName!
-			});
 			await _userRepository.EditUserRoute(model);
 			await _docRepository.AddChat(new DocumentChat() {
-					ChatName = message.Caption!,
+					Name = message.Caption!,
 					FileName = message.Document!.FileName!
 			}, message.Chat.Id);
 			await AddFileToAws(message);
+			await _bot.SendTextMessageAsync(message.Chat.Id, "Чат создан! Документ добавлен!");
 		}
 	}
 

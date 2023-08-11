@@ -36,7 +36,7 @@ public class ChatContinuationMessage : IMessage
 		if (model.Route.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.Route.ChatType), "Не выбран тип чата!");
 		}
-		DocumentChat documentChat = model.DocChatList!.First(d => d.ChatName == model.Route.ChatParam);
+		DocumentChat documentChat = model.DocChatList!.First(d => d.Name == model.Route.ChatParam);
 		HttpService service = new();
 		ResponceModel? responceModel = await service.GetResponce(message.Text![1..], documentChat.FileName);
 

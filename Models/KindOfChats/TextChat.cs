@@ -2,6 +2,6 @@
 
 public class TextChat : IChat
 {
-	public string ChatName { get; set; } = string.Empty;
+	public string Name { get; set; } = string.Empty;
 	public History? ChatHistory { get; set; }
 }

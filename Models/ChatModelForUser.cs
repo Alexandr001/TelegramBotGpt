@@ -22,7 +22,7 @@ public class ChatModelForUser : IModel
 	public static T GetChatByList<T>(List<T> list, string chatName)
 			where T : IChat
 	{
-		T first = list.First(c => c.ChatName == chatName);
+		T first = list.First(c => c.Name == chatName);
 		return first;
 	}
 }

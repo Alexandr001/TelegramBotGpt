@@ -34,8 +34,8 @@ public class DocRoute : IRoute
 
 		foreach (DocumentChat chat in model.DocChatList!) { 
 			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"), 
-					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData(chat.Name, $"{MainRouteConstants.NAME}={chat.Name}"), 
+					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.Name}")
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);

@@ -70,19 +70,18 @@ public class BotController : ControllerBase
 	private async Task CallbackHandler(CallbackQuery callback)
 	{
 		ChatModelForUser? model = await _userRepository.GetUser(callback.Message.Chat.Id);
-		Route route = Route.Parse(str: callback.Data);
+		model.Route.ChatRoute = callback.Data;
 		IFactory<string, ICallback> factory = new CallbackFactory();
-		ICallback? factoryMethod = factory.FactoryMethod(route.ChatRoute!);
+		ICallback? factoryMethod = factory.FactoryMethod(model.Route.ChatRoute!);
 		if (factoryMethod == null) {
 			throw new CustomException("Фабрика не создалась!");
 		}
-		if (route.ChatType == MainRouteConstants.CHAT) {
+		if (model.Route.ChatType == MainRouteConstants.CHAT) {
 			await factoryMethod.ChatCallbackHandler(model, callback);
 		}
-		if (route.ChatType == MainRouteConstants.DOC) {
+		if (model.Route.ChatType == MainRouteConstants.DOC) {
 			await factoryMethod.DocCallbackHandler(model, callback);
 		}
-		await _redisRepository.SetModel(model);
 	}
 
 	private async Task MessageHandler(Message message)
@@ -123,7 +122,6 @@ public class BotController : ControllerBase
 		if (model.Route.ChatType == MainRouteConstants.DOC) {
 			await messageFactory.DocMessageHandler(model, message);
 		}
-		await _redisRepository.SetModel(model);
 	}
 
 	// private async Task<ChatModelForUser> GetChatModelForUser(long id)

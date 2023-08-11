@@ -32,8 +32,8 @@ public class ChatRoute : IRoute
 
 		foreach (TextChat chat in model.ChatList!) {
 			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.ChatName, $"{MainRouteConstants.NAME}={chat.ChatName}"),
-					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.ChatName}")
+					InlineKeyboardButton.WithCallbackData(chat.Name, $"{MainRouteConstants.NAME}={chat.Name}"),
+					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.Name}")
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);

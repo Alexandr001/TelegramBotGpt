@@ -26,19 +26,19 @@ public class DeletionCallback : ICallback
 	public async Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		TextChat textChat =
-				model.ChatList.First(o => o.ChatName == model.Route.ChatParam);
+				model.ChatList.First(o => o.Name == model.Route.ChatParam);
 		model.ChatList.Remove(textChat);
 		await _bot.AnswerCallbackQueryAsync(callbackQuery.Id, "Чат удалён!");
-		await _chatRepository.DeleteChat(textChat.ChatName);
+		await _chatRepository.DeleteChat(textChat.Name);
 	}
 
 	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
 		DocumentChat documentChat =
-				model.DocChatList.First(o => o.ChatName == model.Route.ChatParam);
+				model.DocChatList.First(o => o.Name == model.Route.ChatParam);
 		model.DocChatList.Remove(documentChat);
-		await _chatRepository.DeleteChat(documentChat.ChatName);
-		await _awsRepository.DeleteFile(documentChat.ChatName, callbackQuery.Message!.Chat.Id.ToString());
+		await _chatRepository.DeleteChat(documentChat.Name);
+		await _awsRepository.DeleteFile(documentChat.Name, callbackQuery.Message!.Chat.Id.ToString());
 		await _bot.AnswerCallbackQueryAsync(callbackQuery.Id, "Чат удалён!");
 	}
 }

@@ -18,28 +18,10 @@ public class Route
 		return '/' + ChatType + '/' + ChatRoute + '=' + ChatParam;
 	}
 
-	public static Route Parse(string? chatType = null, string? str = null)
-	{
-		Route route = new() {
-				ChatType = chatType?.Trim('/') ?? string.Empty
-		};
-		if (str == null) {
-			return route;
-		}
-		int indexOf = str.IndexOf('=');
-		if (indexOf == -1) {
-			route.ChatRoute = str;
-			return route;
-		}
-		route.ChatRoute = str[..(indexOf)];
-		route.ChatParam = str[(indexOf + 1)..];
-		return route;
-	}
-
 	public static implicit operator Route(string str)
 	{
 		Route route = new();
-		string[] strings = str.Split('/', '=');
+		string[] strings = str.Split('/', '=', StringSplitOptions.RemoveEmptyEntries);
 		for (int i = 0; i < strings.Length; i++) {
 			switch (i) {
 				case 0:

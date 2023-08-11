@@ -2,6 +2,6 @@
 
 public interface IChat
 {
-	public string ChatName { get; set; }
+	public string Name { get; set; }
 	public History? ChatHistory { get; set; }
 }
