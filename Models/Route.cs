@@ -21,7 +21,7 @@ public class Route
 	public static implicit operator Route(string str)
 	{
 		Route route = new();
-		string[] strings = str.Split('/', '=', StringSplitOptions.RemoveEmptyEntries);
+		string[] strings = str.Split(new[] {'/', '='}, StringSplitOptions.RemoveEmptyEntries);
 		for (int i = 0; i < strings.Length; i++) {
 			switch (i) {
 				case 0:

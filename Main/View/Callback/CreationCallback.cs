@@ -20,10 +20,7 @@ public class CreationCallback : ICallback
 	}
 	public async Task ChatCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
-		model.Route = new Route() {
-				ChatType = MainRouteConstants.CHAT,
-				ChatRoute = MainRouteConstants.NEW
-		};
+		model.Route = callbackQuery.Data;
 		await _userRepository.EditUserRoute(model);
 		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, 
 		                                callbackQuery.Message!.MessageId, 
@@ -32,10 +29,7 @@ public class CreationCallback : ICallback
 
 	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
 	{
-		model.Route = new Route() {
-				ChatType = MainRouteConstants.DOC,
-				ChatRoute = MainRouteConstants.NEW
-		};
+		model.Route = callbackQuery.Data;
 		await _userRepository.EditUserRoute(model);
 		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, 
 		                                callbackQuery.Message!.MessageId, 

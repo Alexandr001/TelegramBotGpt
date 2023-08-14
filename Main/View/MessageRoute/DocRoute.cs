@@ -29,16 +29,19 @@ public class DocRoute : IRoute
 		};
 		await _userRepository.EditUserRoute(model);
 		List<InlineKeyboardButton[]> list = new() {
-				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", MainRouteConstants.NEW)}
+				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", $"/{MainRouteConstants.DOC}/{MainRouteConstants.NEW}")}
 		};
 
-		foreach (DocumentChat chat in model.DocChatList!) { 
-			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.Name, $"{MainRouteConstants.NAME}={chat.Name}"), 
-					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.Name}")
-			});
+		foreach (DocumentChat chat in model.DocChatList!) {
+			if (chat != null) {
+				list.Add(new[] {
+						InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.DOC}/{MainRouteConstants.NAME}={chat.Name}"), 
+						InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.DOC}/{MainRouteConstants.DELETE}={chat.Name}")
+				});
+
+			}
 		}
 		InlineKeyboardMarkup markup = new(list);
-		await _bot.SendTextMessageAsync(message.Chat.Id, "*Выберите или создайте чат для ответы на вопросы по документам*", replyMarkup: markup);
+		await _bot.SendTextMessageAsync(message.Chat.Id, "Выберите или создайте чат для ответы на вопросы по документам", replyMarkup: markup);
 	}
 }

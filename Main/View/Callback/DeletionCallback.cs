@@ -37,7 +37,7 @@ public class DeletionCallback : ICallback
 		DocumentChat documentChat =
 				model.DocChatList.First(o => o.Name == model.Route.ChatParam);
 		model.DocChatList.Remove(documentChat);
-		await _chatRepository.DeleteChat(documentChat.Name);
+		await _docRepository.DeleteChat(documentChat.Name);
 		await _awsRepository.DeleteFile(documentChat.Name, callbackQuery.Message!.Chat.Id.ToString());
 		await _bot.AnswerCallbackQueryAsync(callbackQuery.Id, "Чат удалён!");
 	}

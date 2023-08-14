@@ -48,10 +48,10 @@ public class TextChatRepository : IChatRepository<TextChat>
 
 	public async Task DeleteChat(string name)
 	{
-		string sqlQuery = "DELETE FROM TextChat WHERE Name = @name";
+		string sqlQuery = "DELETE FROM TextChat WHERE Name = @Name";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(sqlQuery, name);
+		await connection.ExecuteAsync(sqlQuery, new {Name = name});
 	}
 
 	public async Task AddHistory(TextChat chatName)

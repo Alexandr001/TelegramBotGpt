@@ -27,13 +27,13 @@ public class ChatRoute : IRoute
 		};
 		await _userRepository.EditUserRoute(model);
 		List<InlineKeyboardButton[]> list = new() {
-				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", MainRouteConstants.NEW)}
+				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", $"/{MainRouteConstants.CHAT}/{MainRouteConstants.NEW}")}
 		};
 
 		foreach (TextChat chat in model.ChatList!) {
 			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.Name, $"{MainRouteConstants.NAME}={chat.Name}"),
-					InlineKeyboardButton.WithCallbackData("`Удалить`", $"{MainRouteConstants.DELETE}={chat.Name}")
+					InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.CHAT}/{MainRouteConstants.NAME}={chat.Name}"),
+					InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.CHAT}/{MainRouteConstants.DELETE}={chat.Name}")
 			});
 		}
 		InlineKeyboardMarkup markup = new(list);

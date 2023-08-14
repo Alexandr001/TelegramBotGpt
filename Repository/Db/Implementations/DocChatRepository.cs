@@ -28,9 +28,7 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		                               + $"{nameof(dbModel.FileName)});";
 
 		using IDbConnection connection = _context.Connection();
-		using IDbTransaction transaction = connection.BeginTransaction();
 		await connection.ExecuteAsync(SQL_INSERT_CHAT, dbModel);
-		transaction.Commit();
 	}
 
 	public async Task<DocumentChat> GetChatHistory(long userId, string chatName)
@@ -53,10 +51,10 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 
 	public async Task DeleteChat(string name)
 	{
-		string sqlQuery = "DELETE FROM DocChat WHERE Name = @name";
+		string sqlQuery = "DELETE FROM DocChat WHERE Name = @Name";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(sqlQuery, name);
+		await connection.ExecuteAsync(sqlQuery, new {Name = name});
 	}
 
 	public async Task AddHistory(DocumentChat chatName)

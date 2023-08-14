@@ -24,7 +24,6 @@ public class BotController : ControllerBase
 
 	public BotController(ILogger<BotController> logger)
 	{
-		
 		_logger = logger;
 		_redisRepository = IoCContainer.GetService<IRedisRepository>();
 		_userRepository = IoCContainer.GetService<IUserRepository>();
@@ -70,7 +69,7 @@ public class BotController : ControllerBase
 	private async Task CallbackHandler(CallbackQuery callback)
 	{
 		ChatModelForUser? model = await _userRepository.GetUser(callback.Message.Chat.Id);
-		model.Route.ChatRoute = callback.Data;
+		model.Route = callback.Data;
 		IFactory<string, ICallback> factory = new CallbackFactory();
 		ICallback? factoryMethod = factory.FactoryMethod(model.Route.ChatRoute!);
 		if (factoryMethod == null) {
