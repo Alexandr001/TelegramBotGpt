@@ -31,12 +31,14 @@ public class ChatRoute : IRoute
 		};
 
 		foreach (TextChat chat in model.ChatList!) {
-			list.Add(new[] {
-					InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.CHAT}/{MainRouteConstants.NAME}={chat.Name}"),
-					InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.CHAT}/{MainRouteConstants.DELETE}={chat.Name}")
-			});
+			if (chat != null) {
+				list.Add(new[] {
+						InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.CHAT}/{MainRouteConstants.NAME}={chat.Name}"),
+						InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.CHAT}/{MainRouteConstants.DELETE}={chat.Name}")
+				});
+			}
 		}
 		InlineKeyboardMarkup markup = new(list);
-		await _bot.SendTextMessageAsync(message.Chat.Id, "*Выберите или создайте чат для общения с ChatGPT*", replyMarkup: markup);
+		await _bot.SendTextMessageAsync(message.Chat.Id, "Выберите или создайте чат для общения с ChatGPT", replyMarkup: markup);
 	}
 }

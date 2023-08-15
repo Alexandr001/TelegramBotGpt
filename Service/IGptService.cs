@@ -5,6 +5,6 @@ namespace Service;
 
 public interface IGptService
 {
-	public Task<string> AskQuestionAsync(History? history, string question);
-	public List<ChatMessage> SetChatMessage(History? history, string question);
+	public Task<string> AskQuestionAsync(List<History>? history, string question);
+	public List<ChatMessage> SetChatMessage(List<History>? history, string question);
 }

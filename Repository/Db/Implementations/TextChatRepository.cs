@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using IoC;
+using Models;
 using Models.KindOfChats;
 using Repository.Db.Interfaces;
 
@@ -31,19 +32,29 @@ public class TextChatRepository : IChatRepository<TextChat>
 	public async Task<TextChat> GetChatHistory(long userId, string chatName)
 	{
 		const string SQL_QUERY = "SELECT TC.Name, HT.UserMessage, HT.BotMessage FROM TextChat TC " + 
-		                         "INNER JOIN HistoryText HT " + 
+		                         "LEFT JOIN HistoryText HT " + 
 		                         "on TC.Name = HT.Name " + 
 		                         "WHERE TC.Name = @Name AND TC.userId = @UserId " + 
 		                         "ORDER BY HT.sequenceNumber;";
 		using IDbConnection connection = _context.Connection();
-		IEnumerable<TextChat> queryAsync = await connection.QueryAsync<TextChat, History, TextChat>(SQL_QUERY, (chat, history) => {
-			chat.ChatHistory = history;
-			return chat;
-		}, new {
-				ChatHame = chatName,
-				UserId = userId
-		});
-		return queryAsync.First();
+		IEnumerable<TextChat?> queryAsync = await connection.QueryAsync<TextChat, History, TextChat>(
+		                                     SQL_QUERY, 
+		                                     (chat, history) => {
+			                                     chat.ChatHistory.Add(history);
+			                                     return chat;
+		                                     }, new {
+				                                     Name = chatName,
+				                                     UserId = userId
+		                                     }, splitOn: "UserMessage");
+		IEnumerable<TextChat> textChats = queryAsync.GroupBy(t => t.Name)
+		                                            .ToList()
+		                                            .Select(g => {
+			                                            TextChat? groupedChat = g.First();
+			                                            groupedChat.ChatHistory = g.Select(p => p.ChatHistory.Single())
+			                                                                       .ToList();
+			                                            return groupedChat;
+		                                            });
+		return textChats.First();
 	}
 
 	public async Task DeleteChat(string name)
@@ -72,11 +83,11 @@ public class TextChatRepository : IChatRepository<TextChat>
 		using IDbConnection connection = _context.Connection();
 		connection.Open();
 		using IDbTransaction transaction = connection.BeginTransaction();
-		for (int i = 0; i < chatName.ChatHistory!.UserMessages.Count; i++) {
+		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
 			model = new {
 					ChatName = chatName.Name, 
-					UserMessage = chatName.ChatHistory!.UserMessages[i], 
-					BotMessage = chatName.ChatHistory!.BotMessages[i], 
+					UserMessage = chatName.ChatHistory[i].UserMessages, 
+					BotMessage = chatName.ChatHistory[i].BotMessages, 
 					Index = i};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);
 		}

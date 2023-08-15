@@ -25,7 +25,7 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		const string SQL_INSERT_CHAT = "INSERT INTO DocChat (Name, userId, FileName) VALUE " 
 		                               + $"(@{nameof(dbModel.ChatName)}, "
 		                               + $"@{nameof(dbModel.UserId)}, "
-		                               + $"{nameof(dbModel.FileName)});";
+		                               + $"@{nameof(dbModel.FileName)});";
 
 		using IDbConnection connection = _context.Connection();
 		await connection.ExecuteAsync(SQL_INSERT_CHAT, dbModel);
@@ -40,7 +40,7 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		                         + "ORDER BY HD.sequenceNumber;";
 		using IDbConnection connection = _context.Connection();
 		IEnumerable<DocumentChat> queryAsync = await connection.QueryAsync<DocumentChat, History, DocumentChat>(SQL_QUERY, (chat, history) => {
-			chat.ChatHistory = history;
+			chat.ChatHistory.Add(history);
 			return chat;
 		}, new {
 				ChatHame = chatName,
@@ -74,11 +74,11 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		using IDbConnection connection = _context.Connection();
 		connection.Open();
 		using IDbTransaction transaction = connection.BeginTransaction();
-		for (int i = 0; i < chatName.ChatHistory!.UserMessages.Count; i++) {
+		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
 			model = new {
 					ChatName = chatName.Name, 
-					UserMessage = chatName.ChatHistory!.UserMessages[i], 
-					BotMessage = chatName.ChatHistory!.BotMessages[i], 
+					UserMessage = chatName.ChatHistory[i].UserMessages, 
+					BotMessage = chatName.ChatHistory![i].BotMessages, 
 					Index = i};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);
 		}

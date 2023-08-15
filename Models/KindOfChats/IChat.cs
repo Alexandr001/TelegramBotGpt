@@ -3,5 +3,5 @@
 public interface IChat
 {
 	public string Name { get; set; }
-	public History? ChatHistory { get; set; }
+	public List<History> ChatHistory { get; set; }
 }
