@@ -33,11 +33,10 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 
 	public async Task<DocumentChat> GetChatHistory(long userId, string chatName)
 	{
-		const string SQL_QUERY = "SELECT DC.Name, DC.FileName, HD.UserMessage, HD.BotMessage FROM DocChat DC " 
-		                         + "INNER JOIN HistoryDoc HD "
-		                         + "on DC.Name = HD.Name " 
-		                         + "WHERE DC.Name = @Name AND DC.userId = @UserId " 
-		                         + "ORDER BY HD.sequenceNumber;";
+		const string SQL_QUERY = "SELECT DC.Name, DC.FileName, HD.UserMessage, HD.BotMessage FROM DocChat DC " + 
+		                         "INNER JOIN HistoryDoc HD " + 
+		                         "on DC.Name = HD.Name " + 
+		                         "WHERE DC.Name = @Name AND DC.userId = @UserId;";
 		using IDbConnection connection = _context.Connection();
 		IEnumerable<DocumentChat> queryAsync = await connection.QueryAsync<DocumentChat, History, DocumentChat>(SQL_QUERY, (chat, history) => {
 			chat.ChatHistory.Add(history);
@@ -62,24 +61,21 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		var model = new {
 				ChatName = "",
 				UserMessage = "",
-				BotMessage = "",
-				Index = 0
+				BotMessage = ""
 		};
-		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryDoc (Name, UserMessage, BotMessage, sequenceNumber) " + "VALUES("
-		                                  + $"@{nameof(model.ChatName)}, " 
-		                                  + $"@{nameof(model.UserMessage)}, " 
-		                                  + $"@{nameof(model.BotMessage)}, "
-		                                  + $"@{nameof(model.Index)})";
+		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryDoc (Name, UserMessage, BotMessage) " + "VALUES(" + 
+		                                  $"@{nameof(model.ChatName)}, " + 
+		                                  $"@{nameof(model.UserMessage)}, " + 
+		                                  $"@{nameof(model.BotMessage)};";
 
 		using IDbConnection connection = _context.Connection();
 		connection.Open();
 		using IDbTransaction transaction = connection.BeginTransaction();
 		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
 			model = new {
-					ChatName = chatName.Name, 
-					UserMessage = chatName.ChatHistory[i].UserMessages, 
-					BotMessage = chatName.ChatHistory![i].BotMessages, 
-					Index = i};
+					ChatName = chatName.Name,
+					UserMessage = chatName.ChatHistory[i].UserMessage,
+					BotMessage = chatName.ChatHistory![i].BotMessage,};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);
 		}
 		transaction.Commit();

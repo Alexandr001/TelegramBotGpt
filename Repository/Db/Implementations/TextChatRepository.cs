@@ -34,8 +34,7 @@ public class TextChatRepository : IChatRepository<TextChat>
 		const string SQL_QUERY = "SELECT TC.Name, HT.UserMessage, HT.BotMessage FROM TextChat TC " + 
 		                         "LEFT JOIN HistoryText HT " + 
 		                         "on TC.Name = HT.Name " + 
-		                         "WHERE TC.Name = @Name AND TC.userId = @UserId " + 
-		                         "ORDER BY HT.sequenceNumber;";
+		                         "WHERE TC.Name = @Name AND TC.userId = @UserId";
 		using IDbConnection connection = _context.Connection();
 		IEnumerable<TextChat?> queryAsync = await connection.QueryAsync<TextChat, History, TextChat>(
 		                                     SQL_QUERY, 
@@ -46,15 +45,14 @@ public class TextChatRepository : IChatRepository<TextChat>
 				                                     Name = chatName,
 				                                     UserId = userId
 		                                     }, splitOn: "UserMessage");
-		IEnumerable<TextChat> textChats = queryAsync.GroupBy(t => t.Name)
-		                                            .ToList()
-		                                            .Select(g => {
-			                                            TextChat? groupedChat = g.First();
-			                                            groupedChat.ChatHistory = g.Select(p => p.ChatHistory.Single())
-			                                                                       .ToList();
-			                                            return groupedChat;
-		                                            });
-		return textChats.First();
+		TextChat textChats = queryAsync.GroupBy(t => t.Name)
+		                               .Select(g => {
+			                               TextChat? groupedChat = g.First();
+			                               groupedChat.ChatHistory = g.Select(p => p.ChatHistory.Single())
+			                                                          .ToList();
+			                               return groupedChat;
+		                               }).Single();
+		return textChats;
 	}
 
 	public async Task DeleteChat(string name)
@@ -70,15 +68,12 @@ public class TextChatRepository : IChatRepository<TextChat>
 		var model = new {
 				ChatName = "",
 				UserMessage = "",
-				BotMessage = "",
-				Index = 0
+				BotMessage = ""
 		};
-		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryText (Name, UserMessage, BotMessage, sequenceNumber) " + 
-		                                  "VALUES(" + 
+		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryText (Name, UserMessage, BotMessage) " + "VALUES(" + 
 		                                  $"@{nameof(model.ChatName)}, " + 
 		                                  $"@{nameof(model.UserMessage)}, " + 
-		                                  $"@{nameof(model.BotMessage)}, " + 
-		                                  $"@{nameof(model.Index)})";
+		                                  $"@{nameof(model.BotMessage)});";
 
 		using IDbConnection connection = _context.Connection();
 		connection.Open();
@@ -86,9 +81,8 @@ public class TextChatRepository : IChatRepository<TextChat>
 		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
 			model = new {
 					ChatName = chatName.Name, 
-					UserMessage = chatName.ChatHistory[i].UserMessages, 
-					BotMessage = chatName.ChatHistory[i].BotMessages, 
-					Index = i};
+					UserMessage = chatName.ChatHistory[i].UserMessage, 
+					BotMessage = chatName.ChatHistory[i].BotMessage};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);
 		}
 		transaction.Commit();

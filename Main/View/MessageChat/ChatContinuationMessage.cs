@@ -34,8 +34,8 @@ public class ChatContinuationMessage : IMessage
 				Name = chatHistory.Name,
 				ChatHistory = new List<History>() {
 						new() {
-								UserMessages = message.Text,
-								BotMessages = response
+								UserMessage = message.Text,
+								BotMessage = response
 						}
 				}
 		});

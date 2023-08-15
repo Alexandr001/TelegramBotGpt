@@ -12,8 +12,10 @@ public class TextChat : IChat
 	public static string HistoryListToString(List<History> list)
 	{
 		StringBuilder sb = new();
-		foreach (History history in list) {
-			sb.Append(history.ConvertToString());
+		foreach (History? history in list) {
+			if (history != null) {
+				sb.Append(history.ConvertToString());
+			}
 		}
 		return sb.ToString();
 	}
