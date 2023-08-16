@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using Dapper;
 using IoC;
-using Models;
 using Models.KindOfChats;
 using Repository.Db.Interfaces;
 
@@ -16,25 +15,27 @@ public class TextChatRepository : IChatRepository<TextChat>
 		_context = IoCContainer.GetService<DbContext>();
 	}
 
-	public async Task AddChat(TextChat model, long chatId)
+	public async Task<int> AddChat(TextChat model, long chatId)
 	{
 		var dbModel = new {
 				UserId = chatId,
 				ChatName = model.Name
 		};
-		const string SQL_INSERT_CHAT = "INSERT INTO TextChat (Name, userId) VALUE " + 
-		                               $"(@{nameof(dbModel.ChatName)}, @{nameof(dbModel.UserId)});";
+		const string SQL_INSERT_CHAT = "INSERT INTO TextChat (name, userId) VALUE " + 
+		                               $"(@{nameof(dbModel.ChatName)}, @{nameof(dbModel.UserId)});" + 
+		                               "SELECT LAST_INSERT_ID();";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(SQL_INSERT_CHAT, dbModel);
+		int id = await connection.QueryFirstOrDefaultAsync<int>(SQL_INSERT_CHAT, dbModel);
+		return id;
 	}
 
-	public async Task<TextChat> GetChatHistory(long userId, string chatName)
+	public async Task<TextChat> GetChatHistory(long userId, int chatId)
 	{
-		const string SQL_QUERY = "SELECT TC.Name, HT.UserMessage, HT.BotMessage FROM TextChat TC " + 
+		const string SQL_QUERY = "SELECT TC.id, TC.name, HT.userMessage, HT.botMessage FROM TextChat TC " + 
 		                         "LEFT JOIN HistoryText HT " + 
-		                         "on TC.Name = HT.Name " + 
-		                         "WHERE TC.Name = @Name AND TC.userId = @UserId";
+		                         "on TC.id = HT.chatId " + 
+		                         "WHERE TC.id = @Id AND TC.userId = @UserId";
 		using IDbConnection connection = _context.Connection();
 		IEnumerable<TextChat?> queryAsync = await connection.QueryAsync<TextChat, History, TextChat>(
 		                                     SQL_QUERY, 
@@ -42,10 +43,10 @@ public class TextChatRepository : IChatRepository<TextChat>
 			                                     chat.ChatHistory.Add(history);
 			                                     return chat;
 		                                     }, new {
-				                                     Name = chatName,
+				                                     Id = chatId,
 				                                     UserId = userId
 		                                     }, splitOn: "UserMessage");
-		TextChat textChats = queryAsync.GroupBy(t => t.Name)
+		TextChat textChats = queryAsync.GroupBy(t => t.Id)
 		                               .Select(g => {
 			                               TextChat? groupedChat = g.First();
 			                               groupedChat.ChatHistory = g.Select(p => p.ChatHistory.Single())
@@ -55,23 +56,28 @@ public class TextChatRepository : IChatRepository<TextChat>
 		return textChats;
 	}
 
-	public async Task DeleteChat(string name)
+	public async Task DeleteChat(int id)
 	{
-		string sqlQuery = "DELETE FROM TextChat WHERE Name = @Name";
+		const string FIRS_QUERY = "DELETE FROM HistoryText WHERE chatId = @Id";
+		const string SECOND_QUERY = "DELETE FROM TextChat WHERE id = @Id;";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(sqlQuery, new {Name = name});
+		connection.Open();
+		using IDbTransaction beginTransaction = connection.BeginTransaction();
+		await connection.ExecuteAsync(FIRS_QUERY, new {Id = id});
+		await connection.ExecuteAsync(SECOND_QUERY, new {Id = id});
+		beginTransaction.Commit();
 	}
 
 	public async Task AddHistory(TextChat chatName)
 	{
 		var model = new {
-				ChatName = "",
+				Id = 0,
 				UserMessage = "",
 				BotMessage = ""
 		};
-		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryText (Name, UserMessage, BotMessage) " + "VALUES(" + 
-		                                  $"@{nameof(model.ChatName)}, " + 
+		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryText (chatId, userMessage, botMessage) " + "VALUES(" + 
+		                                  $"@{nameof(model.Id)}, " + 
 		                                  $"@{nameof(model.UserMessage)}, " + 
 		                                  $"@{nameof(model.BotMessage)});";
 
@@ -80,7 +86,7 @@ public class TextChatRepository : IChatRepository<TextChat>
 		using IDbTransaction transaction = connection.BeginTransaction();
 		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
 			model = new {
-					ChatName = chatName.Name, 
+					Id = chatName.Id, 
 					UserMessage = chatName.ChatHistory[i].UserMessage, 
 					BotMessage = chatName.ChatHistory[i].BotMessage};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);

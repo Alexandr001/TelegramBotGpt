@@ -33,15 +33,15 @@ public class ChatCreationMessage : IMessage
 			if (model.Route.ChatRoute != MainRouteConstants.NEW) {
 				throw new CustomException("Напиши $ еред сообщением!");
 			}
+			int addChatId = await _chatRepository.AddChat(new TextChat() {
+					Name = message.Text ?? ""
+			}, message.Chat.Id);
 			model.Route = new Route() {
 					ChatType = MainRouteConstants.CHAT,
 					ChatRoute = MainRouteConstants.NAME,
-					ChatParam = message.Text
+					ChatParam = addChatId.ToString()
 			};
 			await _userRepository.EditUserRoute(model);
-			await _chatRepository.AddChat(new TextChat() {
-					Name = message.Text ?? ""
-			}, message.Chat.Id);
 			await _bot.SendTextMessageAsync(message.Chat.Id, "Чат создан!");
 		}
 	}
@@ -55,16 +55,17 @@ public class ChatCreationMessage : IMessage
 			if (message.Caption?.Length > 60) {
 				throw new CustomException("Слишком длинное название для чата!");
 			}
-			model.Route = new Route() {
-					ChatType = MainRouteConstants.DOC,
-					ChatRoute = MainRouteConstants.NAME,
-					ChatParam = message.Caption
-			};
-			await _userRepository.EditUserRoute(model);
-			await _docRepository.AddChat(new DocumentChat() {
+			int addChatId = await _docRepository.AddChat(new DocumentChat() {
 					Name = message.Caption!,
 					FileName = message.Document!.FileName!
 			}, message.Chat.Id);
+
+			model.Route = new Route() {
+					ChatType = MainRouteConstants.DOC,
+					ChatRoute = MainRouteConstants.NAME,
+					ChatParam = addChatId.ToString()
+			};
+			await _userRepository.EditUserRoute(model);
 			await AddFileToAws(message);
 			await _bot.SendTextMessageAsync(message.Chat.Id, "Чат создан! Документ добавлен!");
 		}

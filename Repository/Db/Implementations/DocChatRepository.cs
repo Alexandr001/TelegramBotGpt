@@ -14,7 +14,7 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 	{
 		_context = IoCContainer.GetService<DbContext>();
 	}
-	public async Task AddChat(DocumentChat model, long chatId)
+	public async Task<int> AddChat(DocumentChat model, long chatId)
 	{
 		var dbModel = new {
 				UserId = chatId, 
@@ -25,57 +25,64 @@ public class DocChatRepository : IChatRepository<DocumentChat>
 		const string SQL_INSERT_CHAT = "INSERT INTO DocChat (Name, userId, FileName) VALUE " 
 		                               + $"(@{nameof(dbModel.ChatName)}, "
 		                               + $"@{nameof(dbModel.UserId)}, "
-		                               + $"@{nameof(dbModel.FileName)});";
+		                               + $"@{nameof(dbModel.FileName)});" + 
+		                               "SELECT LAST_INSERT_ID()";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(SQL_INSERT_CHAT, dbModel);
+		int id = await connection.QueryFirstOrDefaultAsync<int>(SQL_INSERT_CHAT, dbModel);
+		return id;
 	}
 
-	public async Task<DocumentChat> GetChatHistory(long userId, string chatName)
+	public async Task<DocumentChat> GetChatHistory(long userId, int chatId)
 	{
-		const string SQL_QUERY = "SELECT DC.Name, DC.FileName, HD.UserMessage, HD.BotMessage FROM DocChat DC " + 
-		                         "INNER JOIN HistoryDoc HD " + 
-		                         "on DC.Name = HD.Name " + 
-		                         "WHERE DC.Name = @Name AND DC.userId = @UserId;";
+		const string SQL_QUERY = "SELECT DC.id, DC.name, DC.fileName, HD.userMessage, HD.botMessage FROM DocChat DC " + 
+		                         "LEFT JOIN HistoryDoc HD " + 
+		                         "on DC.id = HD.chatId " + 
+		                         "WHERE DC.id = @ChatId AND DC.userId = @UserId;";
 		using IDbConnection connection = _context.Connection();
 		IEnumerable<DocumentChat> queryAsync = await connection.QueryAsync<DocumentChat, History, DocumentChat>(SQL_QUERY, (chat, history) => {
 			chat.ChatHistory.Add(history);
 			return chat;
 		}, new {
-				ChatHame = chatName,
+				ChatId = chatId,
 				UserId = userId
 		});
 		return queryAsync.First();
 	}
 
-	public async Task DeleteChat(string name)
+	public async Task DeleteChat(int id)
 	{
-		string sqlQuery = "DELETE FROM DocChat WHERE Name = @Name";
+		const string FIRS_QUERY = "DELETE FROM HistoryDoc WHERE chatId = @Id";
+		const string SECOND_QUERY = "DELETE FROM DocChat WHERE id = @Id;";
 
 		using IDbConnection connection = _context.Connection();
-		await connection.ExecuteAsync(sqlQuery, new {Name = name});
+		connection.Open();
+		using IDbTransaction beginTransaction = connection.BeginTransaction();
+		await connection.ExecuteAsync(FIRS_QUERY, new {Id = id});
+		await connection.ExecuteAsync(SECOND_QUERY, new {Id = id});
+		beginTransaction.Commit();
 	}
 
-	public async Task AddHistory(DocumentChat chatName)
+	public async Task AddHistory(DocumentChat chat)
 	{
 		var model = new {
-				ChatName = "",
+				ChatId = 0,
 				UserMessage = "",
 				BotMessage = ""
 		};
-		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryDoc (Name, UserMessage, BotMessage) " + "VALUES(" + 
-		                                  $"@{nameof(model.ChatName)}, " + 
+		const string SQL_INSERT_HISTORY = "INSERT INTO HistoryDoc (chatId, userMessage, botMessage) " + "VALUES(" + 
+		                                  $"@{nameof(model.ChatId)}, " + 
 		                                  $"@{nameof(model.UserMessage)}, " + 
 		                                  $"@{nameof(model.BotMessage)};";
 
 		using IDbConnection connection = _context.Connection();
 		connection.Open();
 		using IDbTransaction transaction = connection.BeginTransaction();
-		for (int i = 0; i < chatName.ChatHistory.Count; i++) {
+		for (int i = 0; i < chat.ChatHistory.Count; i++) {
 			model = new {
-					ChatName = chatName.Name,
-					UserMessage = chatName.ChatHistory[i].UserMessage,
-					BotMessage = chatName.ChatHistory![i].BotMessage,};
+					ChatId = chat.Id,
+					UserMessage = chat.ChatHistory[i].UserMessage,
+					BotMessage = chat.ChatHistory![i].BotMessage};
 			await connection.ExecuteAsync(SQL_INSERT_HISTORY, model, transaction);
 		}
 		transaction.Commit();

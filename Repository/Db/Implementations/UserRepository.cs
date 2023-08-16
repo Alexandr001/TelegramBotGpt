@@ -18,7 +18,7 @@ public class UserRepository : IUserRepository
 
 	public async Task<ChatModelForUser?> GetUser(long id)
 	{
-		string sqlQuery = "SELECT U.id, U.route, TC.Name, DC.Name " + 
+		string sqlQuery = "SELECT U.id, U.route, TC.id, TC.name, DC.id, TC.name " + 
 		                  "FROM User as U " + 
 		                  "LEFT JOIN TextChat TC on U.id = TC.userId " + 
 		                  "LEFT JOIN DocChat DC on U.id = DC.UserId " + 
@@ -32,7 +32,7 @@ public class UserRepository : IUserRepository
 					 user.DocChatList.Add(chatD);
 					 return user;
 				 },
-				 new {Id = id}, splitOn: "Name");
+				 new {Id = id});
 		if (!chatModelForUsers.Any()) {
 			return null;
 		}

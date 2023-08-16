@@ -3,8 +3,8 @@
 public interface IChatRepository<T>
 		where T : class
 {
-	Task<T> GetChatHistory(long userId, string chatName);
-	Task AddChat(T model, long chatId);
+	Task<T> GetChatHistory(long userId, int chatId);
+	Task<int> AddChat(T model, long chatId);
 	Task AddHistory(T chat);
-	Task DeleteChat(string name);
+	Task DeleteChat(int id);
 }

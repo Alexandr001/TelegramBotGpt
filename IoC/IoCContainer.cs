@@ -10,7 +10,8 @@ public static class IoCContainer
 	public static T GetConstant<T>(string name) => 
 			(T) _constants[name];
 
-	public static void RegisterConstants(Dictionary<string, object> constants) => _constants = constants;
+	public static void RegisterConstants(Dictionary<string, object> constants) =>
+			_constants = constants;
 
 	public static void RegisterConstant(string name, object value) => 
 			_constants.Add(name, value);

@@ -28,9 +28,10 @@ public class ChatContinuationMessage : IMessage
 		if (model.Route.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.Route.ChatType), "Не выбран тип чата!");
 		}
-		TextChat chatHistory = await _chatRepository.GetChatHistory(model.Id, model.Route.ChatParam);
+		TextChat chatHistory = await _chatRepository.GetChatHistory(model.Id, int.Parse(model.Route.ChatParam!));
 		string response = await _service.AskQuestionAsync(chatHistory.ChatHistory, message.Text!);
 		await _chatRepository.AddHistory(new TextChat() {
+				Id = chatHistory.Id,
 				Name = chatHistory.Name,
 				ChatHistory = new List<History>() {
 						new() {
@@ -39,6 +40,7 @@ public class ChatContinuationMessage : IMessage
 						}
 				}
 		});
+		
 		await _bot.SendTextMessageAsync(message.Chat.Id, "Продолжение чата по чату! Роут" + model.Route + "\n" + response);
 	}
 
