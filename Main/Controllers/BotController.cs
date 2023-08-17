@@ -9,6 +9,7 @@ using Repository;
 using Repository.Db.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Route = Models.Route;
 
 namespace Main.Controllers;
@@ -39,6 +40,10 @@ public class BotController : ControllerBase
 	public async Task<IActionResult> Post(Update update)
 	{
 		try {
+			if (update.MyChatMember != null && update.MyChatMember.NewChatMember.Status == ChatMemberStatus.Kicked) {
+				await DeleteAll(update.MyChatMember.Chat.Id);
+				return Ok();
+			}
 			if (update.CallbackQuery != null) {
 				await CallbackHandler(update.CallbackQuery);
 				return Ok();
@@ -64,6 +69,12 @@ public class BotController : ControllerBase
 			return Ok();
 		}
 		return Ok();
+	}
+
+	private async Task DeleteAll(long chatId)
+	{
+		Console.WriteLine("Юзер удален!");
+		await _userRepository.DeleteUser(chatId);
 	}
 
 	private async Task CallbackHandler(CallbackQuery callback)

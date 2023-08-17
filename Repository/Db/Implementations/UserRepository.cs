@@ -69,4 +69,26 @@ public class UserRepository : IUserRepository
 				Route = model.Route.ToString()
 		});
 	}
+
+	public async Task DeleteUser(long id)
+	{
+		
+		string firstQuery = "SELECT TC.id FROM TextChat TC WHERE TC.userId = @Id";
+		string secondQuery = "DELETE FROM HistoryText HT WHERE HT.chatId = @ChatId;";
+		string finalQuery = "DELETE FROM TextChat WHERE userId = @Id;" + 
+		                    "DELETE FROM User WHERE id = @Id;";
+
+		var model = new {
+				Id = id,
+		};
+		using IDbConnection connection = _context.Connection();
+		connection.Open();
+		using IDbTransaction beginTransaction = connection.BeginTransaction();
+		IEnumerable<int> queryAsync = await connection.QueryAsync<int>(firstQuery, model);
+		foreach (int i in queryAsync) {
+			await connection.ExecuteAsync(secondQuery, new {ChatId = i});
+		}
+		await connection.ExecuteAsync(finalQuery, model);
+		beginTransaction.Commit();
+	}
 }

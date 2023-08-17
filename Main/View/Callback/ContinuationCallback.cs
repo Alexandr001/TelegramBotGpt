@@ -30,9 +30,15 @@ public class ContinuationCallback : ICallback
 		await _userRepository.EditUserRoute(model);
 		TextChat chat = await _textChatRepository.GetChatHistory(model.Id, int.Parse(model.Route.ChatParam!));
 		string stringHistory = History.HistoryListToString(chat.ChatHistory);
+		if (stringHistory.Length > 4000) {
+			await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!,
+			                                callbackQuery.Message!.MessageId, 
+			                                $"История сообщений чата \"{model.Route.ChatParam}\":\n" + stringHistory[^MAX_LENGTH_MESSAGE..]);
+
+		}
 		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!,
 		                                callbackQuery.Message!.MessageId, 
-		                                $"История сообщений чата \"{model.Route.ChatParam}\":\n" + stringHistory[^MAX_LENGTH_MESSAGE..]);
+		                                $"История сообщений чата \"{model.Route.ChatParam}\":\n" + stringHistory);
 	}
 
 	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)

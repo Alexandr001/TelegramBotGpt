@@ -7,4 +7,5 @@ public interface IUserRepository
 	public Task<ChatModelForUser?> GetUser(long id);
 	public Task CreateUser(ChatModelForUser model);
 	public Task EditUserRoute(ChatModelForUser model);
+	public Task DeleteUser(long id);
 }
