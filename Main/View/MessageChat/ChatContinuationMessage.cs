@@ -14,6 +14,7 @@ public class ChatContinuationMessage : IMessage
 	private readonly IGptService _service;
 	private readonly IChatRepository<DocumentChat> _docRepository;
 	private readonly IChatRepository<TextChat> _chatRepository;
+	private readonly IHttpService _httpService;
 
 	public ChatContinuationMessage()
 	{
@@ -21,6 +22,7 @@ public class ChatContinuationMessage : IMessage
 		_service = IoCContainer.GetService<IGptService>();
 		_chatRepository = IoCContainer.GetService<IChatRepository<TextChat>>();
 		_docRepository = IoCContainer.GetService<IChatRepository<DocumentChat>>();
+		_httpService = IoCContainer.GetService<IHttpService>();
 	}
 
 	public async Task ChatMessageHandler(ChatModelForUser? model, Message message)
@@ -50,9 +52,8 @@ public class ChatContinuationMessage : IMessage
 		if (model.Route.ChatType == null) {
 			throw new ArgumentNullException(nameof(model.Route.ChatType), "Не выбран тип чата!");
 		}
-		DocumentChat documentChat = model.DocChatList!.First(d => d.Name == model.Route.ChatParam);
-		HttpService service = new();
-		ResponceModel? responceModel = await service.GetResponce(message.Text![1..], documentChat.FileName);
+		DocumentChat documentChat = model.DocChatList!.First(d => d.Id == int.Parse(model.Route.ChatParam!));
+		ResponceModel? responceModel = await _httpService.GetResponce(message.Text![1..], $"{model.Id}/{documentChat.FileName}");
 
 		await _bot.SendTextMessageAsync(message.Chat.Id, responceModel!.Message);
 	}

@@ -18,7 +18,7 @@ public class UserRepository : IUserRepository
 
 	public async Task<ChatModelForUser?> GetUser(long id)
 	{
-		string sqlQuery = "SELECT U.id, U.route, TC.id, TC.name, DC.id, TC.name " + 
+		string sqlQuery = "SELECT U.id, U.route, TC.id, TC.name, DC.id, DC.name, DC.fileName " + 
 		                  "FROM User as U " + 
 		                  "LEFT JOIN TextChat TC on U.id = TC.userId " + 
 		                  "LEFT JOIN DocChat DC on U.id = DC.UserId " + 
