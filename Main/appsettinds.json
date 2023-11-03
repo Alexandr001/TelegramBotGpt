@@ -1,0 +1,20 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AWS": {
+    "serviceUrl": "https://#######",
+    "accessKey": "***********************",
+    "secretKey": "*****************",
+    "bucketName": "**********"
+  },
+  "ConnectionStrings": {
+    "sqlConnection": "****************************"
+  },
+  "GptKey": "*****************************************",
+  "BotKey": "*****************************************",
+  "AllowedHosts": "*"
+}
