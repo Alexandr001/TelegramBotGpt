@@ -16,9 +16,9 @@ public class StartRoute : IRoute
 		_userRepository = IoCContainer.GetService<IUserRepository>();
 		_bot = IoCContainer.GetService<TelegramBotClient>();
 	}
-	public async Task RouteHandler(ChatModelForUser model, Message message)
+	public async Task RouteHandler(ChatModelForUser? model, Message message)
 	{
-		if (model == null) {
+		if (model is null) {
 			model = new ChatModelForUser {
 					Id = message.Chat.Id,
 					Route = new Route() {

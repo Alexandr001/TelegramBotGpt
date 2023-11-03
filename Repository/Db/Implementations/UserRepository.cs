@@ -76,6 +76,7 @@ public class UserRepository : IUserRepository
 		string firstQuery = "SELECT TC.id FROM TextChat TC WHERE TC.userId = @Id";
 		string secondQuery = "DELETE FROM HistoryText HT WHERE HT.chatId = @ChatId;";
 		string finalQuery = "DELETE FROM TextChat WHERE userId = @Id;" + 
+		                    "DELETE FROM DocChat WHERE userId = @Id;" +  
 		                    "DELETE FROM User WHERE id = @Id;";
 
 		var model = new {

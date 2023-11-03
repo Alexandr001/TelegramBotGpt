@@ -30,14 +30,11 @@ public class DocRoute : IRoute
 				new[] {InlineKeyboardButton.WithCallbackData("Создать чат", $"/{MainRouteConstants.DOC}/{MainRouteConstants.NEW}")}
 		};
 
-		foreach (DocumentChat chat in model.DocChatList!) {
-			if (chat != null) {
-				list.Add(new[] {
-						InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.DOC}/{MainRouteConstants.NAME}={chat.Id}"), 
-						InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.DOC}/{MainRouteConstants.DELETE}={chat.Id}")
-				});
-
-			}
+		foreach (DocumentChat chat in model.DocChatList) {
+			list.Add(new[] {
+					InlineKeyboardButton.WithCallbackData(chat.Name, $"/{MainRouteConstants.DOC}/{MainRouteConstants.NAME}={chat.Id}"), 
+					InlineKeyboardButton.WithCallbackData("Удалить", $"/{MainRouteConstants.DOC}/{MainRouteConstants.DELETE}={chat.Id}")
+			});
 		}
 		InlineKeyboardMarkup markup = new(list);
 		await _bot.SendTextMessageAsync(message.Chat.Id, "Выберите или создайте чат для ответы на вопросы по документам", replyMarkup: markup);

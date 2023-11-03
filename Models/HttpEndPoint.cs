@@ -23,13 +23,13 @@ public class HttpEndPoint
 	public override string ToString()
 	{
 		string str = "http://" + Ip;
-		if (Port != null) {
+		if (Port is not null) {
 			str += ":" + Port;
 		}
-		if (Route != null) {
+		if (Route is not null) {
 			str += Route;
 		}
-		if (Params != null) {
+		if (Params is not null) {
 			str += AddParams(Params);
 		}
 		return str;

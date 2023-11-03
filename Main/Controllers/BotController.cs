@@ -19,20 +19,21 @@ public class BotController : ControllerBase
 {
 	private readonly TelegramBotClient _bot = BotModel.GetTelegramBot();
 	private readonly ILogger<BotController> _logger;
-	private readonly IRedisRepository _redisRepository;
 	private readonly IUserRepository _userRepository;
+	private readonly IAwsRepository _awsRepository;
 
 	public BotController(ILogger<BotController> logger)
 	{
 		_logger = logger;
-		_redisRepository = IoCContainer.GetService<IRedisRepository>();
+		IoCContainer.GetService<IRedisRepository>();
 		_userRepository = IoCContainer.GetService<IUserRepository>();
+		_awsRepository = IoCContainer.GetService<IAwsRepository>();
 	}
 
 	[HttpGet]
 	public async Task<IActionResult> Get()
 	{
-		return Ok("<h1>Hello! I'm BOT!</h1>");
+		return Ok("Hello! I'm BOT!");
 	}
 
 	[HttpPost]
@@ -72,7 +73,7 @@ public class BotController : ControllerBase
 
 	private async Task DeleteAll(long chatId)
 	{
-		Console.WriteLine("Юзер удален!");
+		await _awsRepository.DeleteFile("", chatId.ToString());
 		await _userRepository.DeleteUser(chatId);
 	}
 
@@ -132,16 +133,4 @@ public class BotController : ControllerBase
 			await messageFactory.DocMessageHandler(model, message);
 		}
 	}
-
-	// private async Task<ChatModelForUser> GetChatModelForUser(long id)
-	// {
-	// 	ChatModelForUser? chatModelForUser = await _redisRepository.GetModelById<ChatModelForUser>(id);
-	// 	if (chatModelForUser == null) {
-	// 		await _redisRepository.SetModel(new ChatModelForUser() {
-	// 				Id = id
-	// 		});
-	// 		chatModelForUser = await _redisRepository.GetModelById<ChatModelForUser>(id);
-	// 	}
-	// 	return chatModelForUser!;
-	// }
 }

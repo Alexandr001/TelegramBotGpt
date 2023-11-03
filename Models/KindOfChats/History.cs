@@ -9,17 +9,15 @@ public class History
 
 	public string ConvertToString()
 	{
-		return "Ваше сообщение:\n" + UserMessage + '\n' + 
-		       "Сообщение бота:\n" + BotMessage + '\n';
+		return "Ваше сообщение:\n" + UserMessage + '\n' + "Сообщение бота:\n" + BotMessage + '\n';
 	}
-	
+
 	public static string HistoryListToString(List<History> list)
 	{
 		StringBuilder sb = new();
 		foreach (History? history in list) {
-			if (history != null) {
-				sb.Append(history.ConvertToString());
-			}
+			if (history is null) { continue; }
+			sb.Append(history.ConvertToString());
 		}
 		return sb.ToString();
 	}

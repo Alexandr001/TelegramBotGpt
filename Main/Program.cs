@@ -9,7 +9,6 @@ Di.Register(builder);
 //builder.Services.AddTransient<TelegramBotClient>(_ => new TelegramBotClient(builder.Configuration.GetSection("BotKey").Value!));
 
 // Add services to the container.
-
 builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddEndpointsApiExplorer();

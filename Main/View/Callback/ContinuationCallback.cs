@@ -33,12 +33,12 @@ public class ContinuationCallback : ICallback
 		if (stringHistory.Length > 4000) {
 			await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!,
 			                                callbackQuery.Message!.MessageId, 
-			                                $"История сообщений чата \"{model.Route.ChatParam}\":\n" + stringHistory[^MAX_LENGTH_MESSAGE..]);
+			                                $"История сообщений чата:\n" + stringHistory[^MAX_LENGTH_MESSAGE..]);
 
 		}
 		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!,
 		                                callbackQuery.Message!.MessageId, 
-		                                $"История сообщений чата \"{model.Route.ChatParam}\":\n" + stringHistory);
+		                                $"История сообщений чата:\n" + stringHistory);
 	}
 
 	public async Task DocCallbackHandler(ChatModelForUser? model, CallbackQuery callbackQuery)
@@ -46,6 +46,6 @@ public class ContinuationCallback : ICallback
 		model.Route = callbackQuery.Data;
 		await _bot.EditMessageTextAsync(callbackQuery.Message?.Chat.Id!, 
 		                                callbackQuery.Message!.MessageId, 
-		                                "Тут будет история сообщений doc:");
+		                                "Вводите сообщение начиная с $!");
 	}
 }
