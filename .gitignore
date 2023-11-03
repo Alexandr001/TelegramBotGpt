@@ -1,5 +1,8 @@
 bin/
 obj/
+.idea/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+Main/appsettings.json
+Main/appsettings.Development.json
